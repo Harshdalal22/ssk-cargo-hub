@@ -54,8 +54,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: Truck, label: "Vehicle Hiring", path: "/vehicle-hiring" },
-    { icon: FileText, label: "Booking Register", path: "/booking-register" },
+    { icon: FileText, label: "Data Management", path: "/data-management" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

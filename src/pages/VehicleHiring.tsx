@@ -52,6 +52,18 @@ const VehicleHiring = () => {
   useEffect(() => {
     fetchRecords();
     checkUserRole();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('vehicle-hiring-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicle_hiring_details' }, () => {
+        fetchRecords();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {

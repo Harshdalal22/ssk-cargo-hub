@@ -52,6 +52,18 @@ const BookingRegister = () => {
   useEffect(() => {
     fetchRecords();
     checkUserRole();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('booking-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'booking_register' }, () => {
+        fetchRecords();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {

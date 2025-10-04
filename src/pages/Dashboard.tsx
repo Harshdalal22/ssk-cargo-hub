@@ -25,6 +25,42 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardStats();
+
+    // Set up real-time subscriptions
+    const vehicleChannel = supabase
+      .channel('vehicle-hiring-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'vehicle_hiring_details'
+        },
+        () => {
+          fetchDashboardStats();
+        }
+      )
+      .subscribe();
+
+    const bookingChannel = supabase
+      .channel('booking-register-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'booking_register'
+        },
+        () => {
+          fetchDashboardStats();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(vehicleChannel);
+      supabase.removeChannel(bookingChannel);
+    };
   }, []);
 
   const fetchDashboardStats = async () => {
