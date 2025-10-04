@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Truck,
   FileText,
+  Database,
   LogOut,
   Menu,
   X,
@@ -54,7 +55,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: FileText, label: "Data Management", path: "/data-management" },
+    { icon: Truck, label: "Vehicle Hiring", path: "/vehicle-hiring" },
+    { icon: FileText, label: "Booking Register", path: "/booking-register" },
+    { icon: Database, label: "Data Management", path: "/data-management" },
   ];
 
   const isActive = (path: string) => location.pathname === path;

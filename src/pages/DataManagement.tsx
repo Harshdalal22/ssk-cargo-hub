@@ -5,13 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Upload, Search, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, Upload, Search, FileSpreadsheet, FileText, Pencil, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import VehicleHiringForm from "@/components/forms/VehicleHiringForm";
+import BookingForm from "@/components/forms/BookingForm";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 interface VehicleHiring {
+  id: string;
   booking_id: string;
   date: string;
   gr_number: string;
@@ -31,6 +45,7 @@ interface VehicleHiring {
 }
 
 interface Booking {
+  id: string;
   booking_id: string;
   party_name: string;
   date: string;
@@ -54,9 +69,17 @@ const DataManagement = () => {
   const [bookingRecords, setBookingRecords] = useState<Booking[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isVehicleFormOpen, setIsVehicleFormOpen] = useState(false);
+  const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<VehicleHiring | null>(null);
+  const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteType, setDeleteType] = useState<'vehicle' | 'booking' | null>(null);
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     fetchAllRecords();
+    checkUserRole();
 
     // Real-time subscriptions
     const vehicleChannel = supabase
@@ -78,6 +101,18 @@ const DataManagement = () => {
       supabase.removeChannel(bookingChannel);
     };
   }, []);
+
+  const checkUserRole = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+      setUserRole(data?.role || "staff");
+    }
+  };
 
   const fetchAllRecords = async () => {
     await Promise.all([fetchVehicleRecords(), fetchBookingRecords()]);
@@ -203,6 +238,46 @@ const DataManagement = () => {
     );
   };
 
+  const handleDelete = async () => {
+    if (!deleteId || !deleteType) return;
+
+    try {
+      const table = deleteType === 'vehicle' ? 'vehicle_hiring_details' : 'booking_register';
+      const { error } = await supabase.from(table).delete().eq("id", deleteId);
+      
+      if (error) throw error;
+      toast.success("Record deleted successfully");
+      fetchAllRecords();
+    } catch (error) {
+      toast.error("Error deleting record");
+    } finally {
+      setDeleteId(null);
+      setDeleteType(null);
+    }
+  };
+
+  const handleEditVehicle = (record: VehicleHiring) => {
+    setEditingVehicle(record);
+    setIsVehicleFormOpen(true);
+  };
+
+  const handleEditBooking = (record: Booking) => {
+    setEditingBooking(record);
+    setIsBookingFormOpen(true);
+  };
+
+  const handleVehicleFormClose = () => {
+    setIsVehicleFormOpen(false);
+    setEditingVehicle(null);
+    fetchAllRecords();
+  };
+
+  const handleBookingFormClose = () => {
+    setIsBookingFormOpen(false);
+    setEditingBooking(null);
+    fetchAllRecords();
+  };
+
   const VehicleTable = ({ data }: { data: VehicleHiring[] }) => (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
@@ -224,6 +299,8 @@ const DataManagement = () => {
             <th className="border p-2 text-sm font-medium">Total Balance</th>
             <th className="border p-2 text-sm font-medium">POD Status</th>
             <th className="border p-2 text-sm font-medium">Payment Status</th>
+            {userRole === "admin" && <th className="border p-2 text-sm font-medium">Actions</th>}
+            {userRole === "admin" && <th className="border p-2 text-sm font-medium">Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -243,8 +320,35 @@ const DataManagement = () => {
               <td className="border p-2 text-sm text-right">₹{record.balance.toLocaleString()}</td>
               <td className="border p-2 text-sm text-right">₹{record.other_expenses.toLocaleString()}</td>
               <td className="border p-2 text-sm text-right font-medium">₹{record.total_balance.toLocaleString()}</td>
-              <td className="border p-2 text-sm text-center">{record.pod_status}</td>
-              <td className="border p-2 text-sm text-center">{record.payment_status}</td>
+              <td className="border p-2 text-sm text-center">
+                <Badge variant={record.pod_status === "Completed" ? "secondary" : "destructive"}>
+                  {record.pod_status}
+                </Badge>
+              </td>
+              <td className="border p-2 text-sm text-center">
+                <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
+                  {record.payment_status}
+                </Badge>
+              </td>
+              {userRole === "admin" && (
+                <td className="border p-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleEditVehicle(record)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeleteId(record.id);
+                        setDeleteType('vehicle');
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -293,7 +397,30 @@ const DataManagement = () => {
               <td className="border p-2 text-sm text-right">₹{record.balance.toLocaleString()}</td>
               <td className="border p-2 text-sm text-right">₹{record.other_expenses.toLocaleString()}</td>
               <td className="border p-2 text-sm text-right font-medium">₹{record.total_balance.toLocaleString()}</td>
-              <td className="border p-2 text-sm text-center">{record.payment_status}</td>
+              <td className="border p-2 text-sm text-center">
+                <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
+                  {record.payment_status}
+                </Badge>
+              </td>
+              {userRole === "admin" && (
+                <td className="border p-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleEditBooking(record)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setDeleteId(record.id);
+                        setDeleteType('booking');
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -335,6 +462,10 @@ const DataManagement = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle>Vehicle Hiring Records ({vehicleRecords.length})</CardTitle>
                   <div className="flex gap-2">
+                    <Button size="sm" onClick={() => setIsVehicleFormOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add New
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => exportToExcel('vehicle')}>
                       <FileSpreadsheet className="h-4 w-4 mr-2" />
                       Export Excel
@@ -378,6 +509,10 @@ const DataManagement = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle>Booking Records ({bookingRecords.length})</CardTitle>
                   <div className="flex gap-2">
+                    <Button size="sm" onClick={() => setIsBookingFormOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add New
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => exportToExcel('booking')}>
                       <FileSpreadsheet className="h-4 w-4 mr-2" />
                       Export Excel
@@ -415,6 +550,40 @@ const DataManagement = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {isVehicleFormOpen && (
+          <VehicleHiringForm
+            isOpen={isVehicleFormOpen}
+            onClose={handleVehicleFormClose}
+            editData={editingVehicle}
+          />
+        )}
+
+        {isBookingFormOpen && (
+          <BookingForm
+            isOpen={isBookingFormOpen}
+            onClose={handleBookingFormClose}
+            editData={editingBooking}
+          />
+        )}
+
+        <AlertDialog open={!!deleteId} onOpenChange={() => {
+          setDeleteId(null);
+          setDeleteType(null);
+        }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the record.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );
