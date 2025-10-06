@@ -300,7 +300,6 @@ const DataManagement = () => {
             <th className="border p-2 text-sm font-medium">POD Status</th>
             <th className="border p-2 text-sm font-medium">Payment Status</th>
             {userRole === "admin" && <th className="border p-2 text-sm font-medium">Actions</th>}
-            {userRole === "admin" && <th className="border p-2 text-sm font-medium">Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -377,6 +376,7 @@ const DataManagement = () => {
             <th className="border p-2 text-sm font-medium">Other Expenses</th>
             <th className="border p-2 text-sm font-medium">Total Balance</th>
             <th className="border p-2 text-sm font-medium">Payment Status</th>
+            {userRole === "admin" && <th className="border p-2 text-sm font-medium">Actions</th>}
           </tr>
         </thead>
         <tbody>
