@@ -135,12 +135,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {
-              if (isSidebarOpen && location.pathname !== "/dashboard") {
-                navigate("/dashboard");
-              }
-              setIsSidebarOpen(!isSidebarOpen);
-            }}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
             {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
