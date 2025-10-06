@@ -7,6 +7,7 @@ import {
   Truck,
   FileText,
   Database,
+  TrendingUp,
   LogOut,
   Menu,
   X,
@@ -55,6 +56,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", openInNewTab: false },
+    { icon: TrendingUp, label: "Analytics", path: "/analytics", openInNewTab: false },
     { icon: Truck, label: "Vehicle Hiring", path: "/vehicle-hiring", openInNewTab: true },
     { icon: FileText, label: "Booking Register", path: "/booking-register", openInNewTab: true },
     { icon: Database, label: "Data Management", path: "/data-management", openInNewTab: true },

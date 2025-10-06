@@ -278,14 +278,10 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Recent Activity and Notifications */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <RecentActivityTable activities={recentActivity} />
-          </div>
-          <div>
-            <NotificationsPanel notifications={notifications} />
-          </div>
+        {/* Recent Activity and Notifications - Vertical Layout */}
+        <div className="space-y-6">
+          <RecentActivityTable activities={recentActivity} />
+          <NotificationsPanel notifications={notifications} />
         </div>
       </div>
     </DashboardLayout>
