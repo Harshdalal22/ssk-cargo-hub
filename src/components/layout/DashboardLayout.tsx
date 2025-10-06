@@ -54,10 +54,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   const navItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: Truck, label: "Vehicle Hiring", path: "/vehicle-hiring" },
-    { icon: FileText, label: "Booking Register", path: "/booking-register" },
-    { icon: Database, label: "Data Management", path: "/data-management" },
+    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", openInNewTab: false },
+    { icon: Truck, label: "Vehicle Hiring", path: "/vehicle-hiring", openInNewTab: true },
+    { icon: FileText, label: "Booking Register", path: "/booking-register", openInNewTab: true },
+    { icon: Database, label: "Data Management", path: "/data-management", openInNewTab: true },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -82,15 +82,32 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => (
-            <Link key={item.path} to={item.path}>
-              <Button
-                variant={isActive(item.path) ? "default" : "ghost"}
-                className="w-full justify-start"
+            item.openInNewTab ? (
+              <a
+                key={item.path}
+                href={item.path}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <item.icon className="h-4 w-4 mr-2" />
-                {item.label}
-              </Button>
-            </Link>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                >
+                  <item.icon className="h-4 w-4 mr-2" />
+                  {item.label}
+                </Button>
+              </a>
+            ) : (
+              <Link key={item.path} to={item.path}>
+                <Button
+                  variant={isActive(item.path) ? "default" : "ghost"}
+                  className="w-full justify-start"
+                >
+                  <item.icon className="h-4 w-4 mr-2" />
+                  {item.label}
+                </Button>
+              </Link>
+            )
           ))}
         </nav>
 

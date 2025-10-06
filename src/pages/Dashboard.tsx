@@ -1,29 +1,54 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Truck, FileText, DollarSign, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Plus, BookOpen, CheckCircle, IndianRupee, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import StatCard from "@/components/dashboard/StatCard";
+import RecentActivityTable from "@/components/dashboard/RecentActivityTable";
+import NotificationsPanel from "@/components/dashboard/NotificationsPanel";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardStats {
-  totalVehicleHiring: number;
-  totalBookings: number;
-  pendingPayments: number;
-  pendingPOD: number;
-  totalRevenue: number;
+  openBookings: number;
+  completedBookings: number;
+  totalPaymentsDue: number;
+  overduePOD: number;
+}
+
+interface ActivityRecord {
+  id: string;
+  type: string;
+  party_owner: string;
+  date: string;
+  amount: number;
+  status: string;
+}
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  bookingId?: string;
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats>({
-    totalVehicleHiring: 0,
-    totalBookings: 0,
-    pendingPayments: 0,
-    pendingPOD: 0,
-    totalRevenue: 0,
+    openBookings: 0,
+    completedBookings: 0,
+    totalPaymentsDue: 0,
+    overduePOD: 0,
   });
+  const [recentActivity, setRecentActivity] = useState<ActivityRecord[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState<string>("User");
 
   useEffect(() => {
+    fetchUserProfile();
     fetchDashboardStats();
 
     // Set up real-time subscriptions
@@ -63,6 +88,25 @@ const Dashboard = () => {
     };
   }, []);
 
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
+        
+        if (profile?.full_name) {
+          setUserName(profile.full_name);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
   const fetchDashboardStats = async () => {
     try {
       const [vehicleHiringData, bookingsData] = await Promise.all([
@@ -73,27 +117,71 @@ const Dashboard = () => {
       const vehicleHiring = vehicleHiringData.data || [];
       const bookings = bookingsData.data || [];
 
-      const pendingPayments =
-        vehicleHiring.filter((v) => v.payment_status === "Pending").length +
-        bookings.filter((b) => b.payment_status === "Pending").length;
+      // Calculate stats
+      const openBookings = bookings.filter((b) => b.payment_status === "Pending").length;
+      const completedBookings = bookings.filter((b) => b.payment_status === "Completed").length;
+      
+      const totalPaymentsDue =
+        vehicleHiring
+          .filter((v) => v.payment_status === "Pending")
+          .reduce((sum, v) => sum + Number(v.balance || 0), 0) +
+        bookings
+          .filter((b) => b.payment_status === "Pending")
+          .reduce((sum, b) => sum + Number(b.balance || 0), 0);
 
-      const pendingPOD = vehicleHiring.filter(
+      const overduePOD = vehicleHiring.filter(
         (v) => v.pod_status === "Pending"
       ).length;
 
-      const totalRevenue =
-        vehicleHiring.reduce((sum, v) => sum + Number(v.freight), 0) +
-        bookings.reduce((sum, b) => sum + Number(b.freight), 0);
-
       setStats({
-        totalVehicleHiring: vehicleHiring.length,
-        totalBookings: bookings.length,
-        pendingPayments,
-        pendingPOD,
-        totalRevenue,
+        openBookings,
+        completedBookings,
+        totalPaymentsDue,
+        overduePOD,
       });
+
+      // Prepare recent activity
+      const activities: ActivityRecord[] = [
+        ...vehicleHiring.slice(0, 5).map((v) => ({
+          id: v.booking_id,
+          type: "Vehicle Hiring",
+          party_owner: v.owner_name,
+          date: new Date(v.date).toLocaleDateString('en-IN'),
+          amount: Number(v.freight || 0),
+          status: v.payment_status,
+        })),
+        ...bookings.slice(0, 5).map((b) => ({
+          id: b.booking_id,
+          type: "Booking",
+          party_owner: b.party_name,
+          date: new Date(b.date).toLocaleDateString('en-IN'),
+          amount: Number(b.freight || 0),
+          status: b.payment_status,
+        })),
+      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
+
+      setRecentActivity(activities);
+
+      // Create notifications for overdue payments
+      const overdueNotifications: Notification[] = vehicleHiring
+        .filter((v) => v.payment_status === "Pending" && v.pod_status === "Pending")
+        .slice(0, 5)
+        .map((v) => ({
+          id: v.id,
+          title: "Payment Overdue",
+          message: `Payment for booking ${v.booking_id} is overdue. Please process the payment.`,
+          time: "2h ago",
+          bookingId: v.booking_id,
+        }));
+
+      setNotifications(overdueNotifications);
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch dashboard data",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -101,109 +189,103 @@ const Dashboard = () => {
 
   const statCards = [
     {
-      title: "Vehicle Hiring Records",
-      value: stats.totalVehicleHiring,
-      icon: Truck,
-      color: "text-primary",
+      title: "Open Bookings",
+      value: stats.openBookings,
+      change: 12,
+      icon: BookOpen,
+      iconColor: "text-primary-foreground",
+      iconBgColor: "bg-primary",
     },
     {
-      title: "Total Bookings",
-      value: stats.totalBookings,
-      icon: FileText,
-      color: "text-accent",
+      title: "Completed Bookings",
+      value: stats.completedBookings,
+      change: 8,
+      icon: CheckCircle,
+      iconColor: "text-accent-foreground",
+      iconBgColor: "bg-accent",
     },
     {
-      title: "Total Revenue",
-      value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`,
-      icon: DollarSign,
-      color: "text-success",
+      title: "Total Payments Due",
+      value: `₹${stats.totalPaymentsDue.toLocaleString("en-IN")}`,
+      change: -5,
+      icon: IndianRupee,
+      iconColor: "text-warning-foreground",
+      iconBgColor: "bg-warning",
     },
     {
-      title: "Pending Payments",
-      value: stats.pendingPayments,
-      icon: AlertCircle,
-      color: "text-warning",
-      badge: stats.pendingPayments > 0 ? "Attention" : null,
+      title: "Overdue POD Status",
+      value: stats.overduePOD,
+      change: 2,
+      icon: AlertTriangle,
+      iconColor: "text-destructive-foreground",
+      iconBgColor: "bg-destructive",
     },
   ];
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Overview of your cargo management operations
-          </p>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Dashboard Overview</h1>
+            <p className="text-muted-foreground">
+              Welcome back, {userName}. Here's what's happening with your cargo operations today.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => navigate("/vehicle-hiring")}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Vehicle Hiring
+            </Button>
+            <Button 
+              onClick={() => navigate("/booking-register")}
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Booking Register
+            </Button>
+          </div>
         </div>
 
+        {/* Stats Cards */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader className="pb-3">
-                  <div className="h-4 bg-muted rounded w-32"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-8 bg-muted rounded w-20"></div>
-                </CardContent>
-              </Card>
+              <div key={i} className="bg-card border rounded-lg p-6 animate-pulse">
+                <div className="h-12 w-12 bg-muted rounded-lg mb-4"></div>
+                <div className="h-8 bg-muted rounded w-20 mb-2"></div>
+                <div className="h-4 bg-muted rounded w-32"></div>
+              </div>
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {statCards.map((card, index) => (
-              <Card key={index} className="shadow-md hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-3">
-                  <CardTitle className="text-sm font-medium">
-                    {card.title}
-                  </CardTitle>
-                  <card.icon className={`h-5 w-5 ${card.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold">{card.value}</div>
-                    {card.badge && (
-                      <Badge variant="destructive">{card.badge}</Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                key={index}
+                title={card.title}
+                value={card.value}
+                change={card.change}
+                icon={card.icon}
+                iconColor={card.iconColor}
+                iconBgColor={card.iconBgColor}
+              />
             ))}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle>Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Pending POD</span>
-                <Badge variant={stats.pendingPOD > 0 ? "destructive" : "secondary"}>
-                  {stats.pendingPOD}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Completed Payments</span>
-                <Badge variant="secondary">
-                  {stats.totalVehicleHiring + stats.totalBookings - stats.pendingPayments}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle>System Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>All systems operational</p>
-              <p>Database synced</p>
-              <p>Last updated: {new Date().toLocaleString()}</p>
-            </CardContent>
-          </Card>
+        {/* Recent Activity and Notifications */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <RecentActivityTable activities={recentActivity} />
+          </div>
+          <div>
+            <NotificationsPanel notifications={notifications} />
+          </div>
         </div>
       </div>
     </DashboardLayout>
