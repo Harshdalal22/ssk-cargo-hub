@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, CheckCircle, IndianRupee, AlertTriangle } from "lucide-react";
+import { Plus, BookOpen, CircleCheck as CheckCircle, IndianRupee, TriangleAlert as AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import StatCard from "@/components/dashboard/StatCard";
 import RecentActivityTable from "@/components/dashboard/RecentActivityTable";
