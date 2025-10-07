@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Bell } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface Notification {
   id: string;
@@ -17,6 +19,19 @@ interface NotificationsPanelProps {
 }
 
 const NotificationsPanel = ({ notifications }: NotificationsPanelProps) => {
+  const navigate = useNavigate();
+
+  const handleViewDetails = (notification: Notification) => {
+    if (notification.bookingId) {
+      navigate('/booking-register');
+      toast.info(`Viewing details for booking ${notification.bookingId}`);
+    }
+  };
+
+  const handleResolve = (notificationId: string) => {
+    toast.success("Notification resolved successfully");
+  };
+
   return (
     <Card className="h-full">
       <CardHeader>
@@ -59,10 +74,19 @@ const NotificationsPanel = ({ notifications }: NotificationsPanelProps) => {
                         </div>
                       )}
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="outline" className="text-xs h-7">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs h-7"
+                          onClick={() => handleViewDetails(notification)}
+                        >
                           View Details
                         </Button>
-                        <Button size="sm" className="text-xs h-7">
+                        <Button 
+                          size="sm" 
+                          className="text-xs h-7"
+                          onClick={() => handleResolve(notification.id)}
+                        >
                           Resolve
                         </Button>
                       </div>

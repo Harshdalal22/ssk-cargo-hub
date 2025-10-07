@@ -299,7 +299,7 @@ const DataManagement = () => {
             <th className="border p-2 text-sm font-medium">Total Balance</th>
             <th className="border p-2 text-sm font-medium">POD Status</th>
             <th className="border p-2 text-sm font-medium">Payment Status</th>
-            {userRole === "admin" && <th className="border p-2 text-sm font-medium">Actions</th>}
+            <th className="border p-2 text-sm font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -329,12 +329,12 @@ const DataManagement = () => {
                   {record.payment_status}
                 </Badge>
               </td>
-              {userRole === "admin" && (
-                <td className="border p-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditVehicle(record)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+              <td className="border p-2">
+                <div className="flex items-center justify-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={() => handleEditVehicle(record)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  {userRole === "admin" && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -345,9 +345,9 @@ const DataManagement = () => {
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
-                  </div>
-                </td>
-              )}
+                  )}
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -376,7 +376,7 @@ const DataManagement = () => {
             <th className="border p-2 text-sm font-medium">Other Expenses</th>
             <th className="border p-2 text-sm font-medium">Total Balance</th>
             <th className="border p-2 text-sm font-medium">Payment Status</th>
-            {userRole === "admin" && <th className="border p-2 text-sm font-medium">Actions</th>}
+            <th className="border p-2 text-sm font-medium">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -402,12 +402,12 @@ const DataManagement = () => {
                   {record.payment_status}
                 </Badge>
               </td>
-              {userRole === "admin" && (
-                <td className="border p-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditBooking(record)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+              <td className="border p-2">
+                <div className="flex items-center justify-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={() => handleEditBooking(record)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  {userRole === "admin" && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -418,9 +418,9 @@ const DataManagement = () => {
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
-                  </div>
-                </td>
-              )}
+                  )}
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
