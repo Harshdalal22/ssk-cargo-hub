@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Truck, Package, BarChart3, Shield } from "lucide-react";
+import sskLogo from "@/assets/ssk-logo.jpeg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -44,12 +45,10 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
-          <div className="flex items-center justify-center mb-6">
-            <div className="p-4 rounded-2xl bg-primary text-primary-foreground shadow-glow">
-              <Truck className="h-12 w-12" />
-            </div>
+          <div className="flex items-center justify-center mb-8">
+            <img src={sskLogo} alt="SSK Cargo Transportation" className="h-32 w-auto object-contain" />
           </div>
-          <h1 className="text-5xl font-bold mb-4">SSK Cargo Management</h1>
+          <h1 className="text-5xl font-bold mb-4">SSK Cargo Transportation</h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Modern database management system for vehicle hiring and cargo booking operations
           </p>

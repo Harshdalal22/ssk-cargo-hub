@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import sskLogo from "@/assets/ssk-logo.jpeg";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -70,10 +71,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div className="lg:hidden sticky top-0 z-50 bg-card border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-primary text-primary-foreground">
-              <Truck className="h-4 w-4" />
-            </div>
-            <h2 className="font-bold text-sm">SSK Cargo</h2>
+            <img src={sskLogo} alt="SSK Cargo" className="h-8 w-auto object-contain" />
           </div>
           <Button
             variant="ghost"
@@ -114,13 +112,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           >
             <div className="p-6 flex items-center justify-between border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary text-primary-foreground">
-                  <Truck className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h2 className="font-bold text-lg">SSK Cargo</h2>
-                  <p className="text-xs text-muted-foreground">Management System</p>
-                </div>
+                <img src={sskLogo} alt="SSK Cargo" className="h-10 w-auto object-contain" />
               </div>
               <Button
                 variant="ghost"
@@ -171,13 +163,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           } transition-all duration-300 bg-card border-r border-border flex flex-col overflow-hidden`}
         >
           <div className="p-6 flex items-center gap-3 border-b border-border">
-            <div className="p-2 rounded-lg bg-primary text-primary-foreground">
-              <Truck className="h-6 w-6" />
-            </div>
-            <div className="flex-1">
-              <h2 className="font-bold text-lg">SSK Cargo</h2>
-              <p className="text-xs text-muted-foreground">Management System</p>
-            </div>
+            <img src={sskLogo} alt="SSK Cargo" className="h-12 w-auto object-contain" />
           </div>
 
           <nav className="flex-1 p-4 space-y-2">
