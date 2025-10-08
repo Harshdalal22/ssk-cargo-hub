@@ -195,6 +195,7 @@ const Dashboard = () => {
       icon: BookOpen,
       iconColor: "text-primary-foreground",
       iconBgColor: "bg-primary",
+      onClick: () => navigate("/booking-register"),
     },
     {
       title: "Completed Bookings",
@@ -203,6 +204,7 @@ const Dashboard = () => {
       icon: CheckCircle,
       iconColor: "text-accent-foreground",
       iconBgColor: "bg-accent",
+      onClick: () => navigate("/booking-register"),
     },
     {
       title: "Total Payments Due",
@@ -211,6 +213,7 @@ const Dashboard = () => {
       icon: IndianRupee,
       iconColor: "text-warning-foreground",
       iconBgColor: "bg-warning",
+      onClick: () => navigate("/vehicle-hiring"),
     },
     {
       title: "Overdue POD Status",
@@ -219,6 +222,7 @@ const Dashboard = () => {
       icon: AlertTriangle,
       iconColor: "text-destructive-foreground",
       iconBgColor: "bg-destructive",
+      onClick: () => navigate("/vehicle-hiring"),
     },
   ];
 
@@ -274,6 +278,7 @@ const Dashboard = () => {
                 icon={card.icon}
                 iconColor={card.iconColor}
                 iconBgColor={card.iconBgColor}
+                onClick={card.onClick}
               />
             ))}
           </div>
