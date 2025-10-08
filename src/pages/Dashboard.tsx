@@ -224,28 +224,29 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-3">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Dashboard Overview</h1>
-            <p className="text-muted-foreground">
-              Welcome back, {userName}. Here's what's happening with your cargo operations today.
+            <h1 className="text-2xl lg:text-3xl font-bold mb-1 lg:mb-2">Dashboard Overview</h1>
+            <p className="text-sm lg:text-base text-muted-foreground">
+              Welcome back, {userName}. Here's what's happening today.
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 lg:gap-3">
             <Button 
               onClick={() => navigate("/vehicle-hiring")}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 w-full sm:w-auto text-sm lg:text-base h-9 lg:h-10"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1.5 lg:mr-2" />
               Add Vehicle Hiring
             </Button>
             <Button 
               onClick={() => navigate("/booking-register")}
               variant="outline"
+              className="w-full sm:w-auto text-sm lg:text-base h-9 lg:h-10"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1.5 lg:mr-2" />
               Add Booking Register
             </Button>
           </div>
@@ -253,17 +254,17 @@ const Dashboard = () => {
 
         {/* Stats Cards */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-card border rounded-lg p-6 animate-pulse">
-                <div className="h-12 w-12 bg-muted rounded-lg mb-4"></div>
-                <div className="h-8 bg-muted rounded w-20 mb-2"></div>
-                <div className="h-4 bg-muted rounded w-32"></div>
+              <div key={i} className="bg-card border rounded-lg p-3 lg:p-6 animate-pulse">
+                <div className="h-8 w-8 lg:h-12 lg:w-12 bg-muted rounded-lg mb-2 lg:mb-4"></div>
+                <div className="h-6 lg:h-8 bg-muted rounded w-12 lg:w-20 mb-1 lg:mb-2"></div>
+                <div className="h-3 lg:h-4 bg-muted rounded w-20 lg:w-32"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
             {statCards.map((card, index) => (
               <StatCard
                 key={index}
@@ -278,8 +279,8 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Recent Activity and Notifications - Vertical Layout */}
-        <div className="space-y-6">
+        {/* Recent Activity and Notifications */}
+        <div className="space-y-4 lg:space-y-6">
           <RecentActivityTable activities={recentActivity} />
           <NotificationsPanel notifications={notifications} />
         </div>
