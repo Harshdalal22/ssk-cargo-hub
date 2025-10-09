@@ -10,6 +10,9 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import VehicleHiringForm from "@/components/forms/VehicleHiringForm";
 import BookingForm from "@/components/forms/BookingForm";
+import { CustomerDetailsForm } from "@/components/forms/CustomerDetailsForm";
+import { VehicleFleetForm } from "@/components/forms/VehicleFleetForm";
+import { DriverInformationForm } from "@/components/forms/DriverInformationForm";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,14 +70,23 @@ interface Booking {
 const DataManagement = () => {
   const [vehicleRecords, setVehicleRecords] = useState<VehicleHiring[]>([]);
   const [bookingRecords, setBookingRecords] = useState<Booking[]>([]);
+  const [customerRecords, setCustomerRecords] = useState<any[]>([]);
+  const [fleetRecords, setFleetRecords] = useState<any[]>([]);
+  const [driverRecords, setDriverRecords] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isVehicleFormOpen, setIsVehicleFormOpen] = useState(false);
   const [isBookingFormOpen, setIsBookingFormOpen] = useState(false);
+  const [isCustomerFormOpen, setIsCustomerFormOpen] = useState(false);
+  const [isFleetFormOpen, setIsFleetFormOpen] = useState(false);
+  const [isDriverFormOpen, setIsDriverFormOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<VehicleHiring | null>(null);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<any>(null);
+  const [editingFleet, setEditingFleet] = useState<any>(null);
+  const [editingDriver, setEditingDriver] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleteType, setDeleteType] = useState<'vehicle' | 'booking' | null>(null);
+  const [deleteType, setDeleteType] = useState<'vehicle' | 'booking' | 'customer' | 'fleet' | 'driver' | null>(null);
   const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
@@ -96,9 +108,33 @@ const DataManagement = () => {
       })
       .subscribe();
 
+    const customerChannel = supabase
+      .channel('customer-data-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'customer_details' }, () => {
+        fetchCustomerRecords();
+      })
+      .subscribe();
+
+    const fleetChannel = supabase
+      .channel('fleet-data-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicle_fleet' }, () => {
+        fetchFleetRecords();
+      })
+      .subscribe();
+
+    const driverChannel = supabase
+      .channel('driver-data-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'driver_information' }, () => {
+        fetchDriverRecords();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(vehicleChannel);
       supabase.removeChannel(bookingChannel);
+      supabase.removeChannel(customerChannel);
+      supabase.removeChannel(fleetChannel);
+      supabase.removeChannel(driverChannel);
     };
   }, []);
 
@@ -115,8 +151,38 @@ const DataManagement = () => {
   };
 
   const fetchAllRecords = async () => {
-    await Promise.all([fetchVehicleRecords(), fetchBookingRecords()]);
+    await Promise.all([
+      fetchVehicleRecords(), 
+      fetchBookingRecords(),
+      fetchCustomerRecords(),
+      fetchFleetRecords(),
+      fetchDriverRecords()
+    ]);
     setIsLoading(false);
+  };
+
+  const fetchCustomerRecords = async () => {
+    const { data } = await supabase
+      .from("customer_details")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setCustomerRecords(data || []);
+  };
+
+  const fetchFleetRecords = async () => {
+    const { data } = await supabase
+      .from("vehicle_fleet")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setFleetRecords(data || []);
+  };
+
+  const fetchDriverRecords = async () => {
+    const { data } = await supabase
+      .from("driver_information")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setDriverRecords(data || []);
   };
 
   const fetchVehicleRecords = async () => {
@@ -451,9 +517,12 @@ const DataManagement = () => {
         </Card>
 
         <Tabs defaultValue="vehicle" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="vehicle">Vehicle Hiring Details</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2">
+            <TabsTrigger value="vehicle">Vehicle Hiring</TabsTrigger>
             <TabsTrigger value="booking">Booking Register</TabsTrigger>
+            <TabsTrigger value="customer">Customer Details</TabsTrigger>
+            <TabsTrigger value="fleet">Vehicle Fleet</TabsTrigger>
+            <TabsTrigger value="driver">Driver Info</TabsTrigger>
           </TabsList>
 
           <TabsContent value="vehicle" className="space-y-4">
@@ -549,6 +618,215 @@ const DataManagement = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="customer" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Customer Details ({customerRecords.length})</CardTitle>
+                  <Button size="sm" onClick={() => setIsCustomerFormOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Customer
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="animate-pulse space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-12 bg-muted rounded"></div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Customer ID</th>
+                          <th className="text-left p-2">Name</th>
+                          <th className="text-left p-2">Company</th>
+                          <th className="text-left p-2">Phone</th>
+                          <th className="text-left p-2">Email</th>
+                          {userRole === "admin" && <th className="text-left p-2">Actions</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {customerRecords.map((record) => (
+                          <tr key={record.id} className="border-b hover:bg-muted/50">
+                            <td className="p-2">{record.customer_id}</td>
+                            <td className="p-2">{record.customer_name}</td>
+                            <td className="p-2">{record.company_name || '-'}</td>
+                            <td className="p-2">{record.phone_number}</td>
+                            <td className="p-2">{record.email || '-'}</td>
+                            {userRole === "admin" && (
+                              <td className="p-2">
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="ghost" onClick={() => {
+                                    setEditingCustomer(record);
+                                    setIsCustomerFormOpen(true);
+                                  }}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => {
+                                    setDeleteId(record.id);
+                                    setDeleteType('customer');
+                                  }}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="fleet" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Vehicle Fleet ({fleetRecords.length})</CardTitle>
+                  <Button size="sm" onClick={() => setIsFleetFormOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Vehicle
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="animate-pulse space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-12 bg-muted rounded"></div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Vehicle ID</th>
+                          <th className="text-left p-2">Lorry Number</th>
+                          <th className="text-left p-2">Type</th>
+                          <th className="text-left p-2">Owner</th>
+                          <th className="text-left p-2">Status</th>
+                          {userRole === "admin" && <th className="text-left p-2">Actions</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {fleetRecords.map((record) => (
+                          <tr key={record.id} className="border-b hover:bg-muted/50">
+                            <td className="p-2">{record.vehicle_id}</td>
+                            <td className="p-2">{record.lorry_number}</td>
+                            <td className="p-2">{record.lorry_type}</td>
+                            <td className="p-2">{record.owner_name}</td>
+                            <td className="p-2">
+                              <Badge variant={record.status === 'Available' ? 'default' : 'secondary'}>
+                                {record.status}
+                              </Badge>
+                            </td>
+                            {userRole === "admin" && (
+                              <td className="p-2">
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="ghost" onClick={() => {
+                                    setEditingFleet(record);
+                                    setIsFleetFormOpen(true);
+                                  }}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => {
+                                    setDeleteId(record.id);
+                                    setDeleteType('fleet');
+                                  }}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="driver" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Driver Information ({driverRecords.length})</CardTitle>
+                  <Button size="sm" onClick={() => setIsDriverFormOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Driver
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="animate-pulse space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-12 bg-muted rounded"></div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Driver ID</th>
+                          <th className="text-left p-2">Name</th>
+                          <th className="text-left p-2">Phone</th>
+                          <th className="text-left p-2">License</th>
+                          <th className="text-left p-2">Status</th>
+                          {userRole === "admin" && <th className="text-left p-2">Actions</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {driverRecords.map((record) => (
+                          <tr key={record.id} className="border-b hover:bg-muted/50">
+                            <td className="p-2">{record.driver_id}</td>
+                            <td className="p-2">{record.driver_name}</td>
+                            <td className="p-2">{record.phone_number}</td>
+                            <td className="p-2">{record.license_number}</td>
+                            <td className="p-2">
+                              <Badge variant={record.status === 'Available' ? 'default' : 'secondary'}>
+                                {record.status}
+                              </Badge>
+                            </td>
+                            {userRole === "admin" && (
+                              <td className="p-2">
+                                <div className="flex gap-2">
+                                  <Button size="sm" variant="ghost" onClick={() => {
+                                    setEditingDriver(record);
+                                    setIsDriverFormOpen(true);
+                                  }}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => {
+                                    setDeleteId(record.id);
+                                    setDeleteType('driver');
+                                  }}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {isVehicleFormOpen && (
@@ -564,6 +842,42 @@ const DataManagement = () => {
             isOpen={isBookingFormOpen}
             onClose={handleBookingFormClose}
             editData={editingBooking}
+          />
+        )}
+
+        {isCustomerFormOpen && (
+          <CustomerDetailsForm
+            isOpen={isCustomerFormOpen}
+            onClose={() => {
+              setIsCustomerFormOpen(false);
+              setEditingCustomer(null);
+              fetchCustomerRecords();
+            }}
+            editData={editingCustomer}
+          />
+        )}
+
+        {isFleetFormOpen && (
+          <VehicleFleetForm
+            isOpen={isFleetFormOpen}
+            onClose={() => {
+              setIsFleetFormOpen(false);
+              setEditingFleet(null);
+              fetchFleetRecords();
+            }}
+            editData={editingFleet}
+          />
+        )}
+
+        {isDriverFormOpen && (
+          <DriverInformationForm
+            isOpen={isDriverFormOpen}
+            onClose={() => {
+              setIsDriverFormOpen(false);
+              setEditingDriver(null);
+              fetchDriverRecords();
+            }}
+            editData={editingDriver}
           />
         )}
 

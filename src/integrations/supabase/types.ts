@@ -83,6 +83,96 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_details: {
+        Row: {
+          address: string | null
+          company_name: string | null
+          created_at: string | null
+          created_by: string
+          customer_id: string
+          customer_name: string
+          email: string | null
+          gst_number: string | null
+          id: string
+          phone_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          created_by: string
+          customer_id: string
+          customer_name: string
+          email?: string | null
+          gst_number?: string | null
+          id?: string
+          phone_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          created_by?: string
+          customer_id?: string
+          customer_name?: string
+          email?: string | null
+          gst_number?: string | null
+          id?: string
+          phone_number?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      driver_information: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          created_by: string
+          current_vehicle: string | null
+          driver_id: string
+          driver_name: string
+          experience_years: number | null
+          id: string
+          license_expiry: string
+          license_number: string
+          phone_number: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          created_by: string
+          current_vehicle?: string | null
+          driver_id: string
+          driver_name: string
+          experience_years?: number | null
+          id?: string
+          license_expiry: string
+          license_number: string
+          phone_number: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          created_by?: string
+          current_vehicle?: string | null
+          driver_id?: string
+          driver_name?: string
+          experience_years?: number | null
+          id?: string
+          license_expiry?: string
+          license_number?: string
+          phone_number?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -125,6 +215,57 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vehicle_fleet: {
+        Row: {
+          capacity_tons: number | null
+          created_at: string | null
+          created_by: string
+          fitness_expiry: string | null
+          id: string
+          insurance_expiry: string | null
+          lorry_number: string
+          lorry_type: string
+          owner_name: string
+          owner_phone: string | null
+          registration_date: string | null
+          status: string | null
+          updated_at: string | null
+          vehicle_id: string
+        }
+        Insert: {
+          capacity_tons?: number | null
+          created_at?: string | null
+          created_by: string
+          fitness_expiry?: string | null
+          id?: string
+          insurance_expiry?: string | null
+          lorry_number: string
+          lorry_type: string
+          owner_name: string
+          owner_phone?: string | null
+          registration_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vehicle_id: string
+        }
+        Update: {
+          capacity_tons?: number | null
+          created_at?: string | null
+          created_by?: string
+          fitness_expiry?: string | null
+          id?: string
+          insurance_expiry?: string | null
+          lorry_number?: string
+          lorry_type?: string
+          owner_name?: string
+          owner_phone?: string | null
+          registration_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          vehicle_id?: string
         }
         Relationships: []
       }
@@ -202,6 +343,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_booking_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

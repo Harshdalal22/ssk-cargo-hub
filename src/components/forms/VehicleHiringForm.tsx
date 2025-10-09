@@ -15,6 +15,8 @@ interface VehicleHiringFormProps {
 
 const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     booking_id: "",
     date: "",
@@ -31,6 +33,10 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
     pod_status: "Pending",
     payment_status: "Pending",
   });
+
+  useEffect(() => {
+    fetchVehiclesAndDrivers();
+  }, []);
 
   useEffect(() => {
     if (editData) {
@@ -50,8 +56,27 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
         pod_status: editData.pod_status || "Pending",
         payment_status: editData.payment_status || "Pending",
       });
+    } else {
+      generateBookingId();
     }
-  }, [editData]);
+  }, [editData, isOpen]);
+
+  const fetchVehiclesAndDrivers = async () => {
+    const [vehiclesRes, driversRes] = await Promise.all([
+      supabase.from('vehicle_fleet').select('*').order('lorry_number'),
+      supabase.from('driver_information').select('*').order('driver_name')
+    ]);
+    
+    if (vehiclesRes.data) setVehicles(vehiclesRes.data);
+    if (driversRes.data) setDrivers(driversRes.data);
+  };
+
+  const generateBookingId = async () => {
+    const { data, error } = await supabase.rpc('generate_booking_id');
+    if (data && !error) {
+      setFormData(prev => ({ ...prev, booking_id: data }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,12 +138,11 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="booking_id">Booking ID *</Label>
+              <Label htmlFor="booking_id">Booking ID</Label>
               <Input
                 id="booking_id"
                 value={formData.booking_id}
-                onChange={(e) => setFormData({ ...formData, booking_id: e.target.value })}
-                required
+                disabled
               />
             </div>
             <div className="space-y-2">
@@ -156,34 +180,56 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="lorry_number">Lorry Number *</Label>
-              <Input
-                id="lorry_number"
-                value={formData.lorry_number}
-                onChange={(e) => setFormData({ ...formData, lorry_number: e.target.value })}
-                required
-              />
+              <Select 
+                value={formData.lorry_number} 
+                onValueChange={(value) => {
+                  const vehicle = vehicles.find(v => v.lorry_number === value);
+                  setFormData({ 
+                    ...formData, 
+                    lorry_number: value,
+                    owner_name: vehicle?.owner_name || formData.owner_name
+                  });
+                }}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select vehicle" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {vehicles.map((vehicle) => (
+                    <SelectItem key={vehicle.id} value={vehicle.lorry_number}>
+                      {vehicle.lorry_number} ({vehicle.lorry_type})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="driver_number">Driver Number</Label>
-              <Input
-                id="driver_number"
-                value={formData.driver_number}
-                onChange={(e) => setFormData({ ...formData, driver_number: e.target.value })}
-              />
+              <Label htmlFor="driver_number">Driver</Label>
+              <Select 
+                value={formData.driver_number} 
+                onValueChange={(value) => setFormData({ ...formData, driver_number: value })}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select driver" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {drivers.map((driver) => (
+                    <SelectItem key={driver.id} value={driver.phone_number}>
+                      {driver.driver_name} ({driver.phone_number})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="owner_name">Owner Name *</Label>
-            <Select value={formData.owner_name} onValueChange={(value) => setFormData({ ...formData, owner_name: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Self">Self</SelectItem>
-                <SelectItem value="Third Party">Third Party</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="owner_name">Owner Name</Label>
+            <Input
+              id="owner_name"
+              value={formData.owner_name}
+              disabled
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -246,10 +292,10 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
             <div className="space-y-2">
               <Label htmlFor="pod_status">POD Status</Label>
               <Select value={formData.pod_status} onValueChange={(value) => setFormData({ ...formData, pod_status: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background">
                   <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
                 </SelectContent>
@@ -258,10 +304,10 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
             <div className="space-y-2">
               <Label htmlFor="payment_status">Payment Status</Label>
               <Select value={formData.payment_status} onValueChange={(value) => setFormData({ ...formData, payment_status: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background">
                   <SelectItem value="Pending">Pending</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
                 </SelectContent>
