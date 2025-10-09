@@ -496,10 +496,10 @@ const DataManagement = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Data Management</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl lg:text-3xl font-bold mb-1 lg:mb-2">Data Management</h1>
+          <p className="text-sm lg:text-base text-muted-foreground">
             View, import, and export all records in Excel-like format
           </p>
         </div>
@@ -517,36 +517,38 @@ const DataManagement = () => {
         </Card>
 
         <Tabs defaultValue="vehicle" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2">
-            <TabsTrigger value="vehicle">Vehicle Hiring</TabsTrigger>
-            <TabsTrigger value="booking">Booking Register</TabsTrigger>
-            <TabsTrigger value="customer">Customer Details</TabsTrigger>
-            <TabsTrigger value="fleet">Vehicle Fleet</TabsTrigger>
-            <TabsTrigger value="driver">Driver Info</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="inline-flex w-full lg:grid lg:grid-cols-5 gap-1 lg:gap-2 min-w-max lg:min-w-0">
+              <TabsTrigger value="vehicle" className="text-xs lg:text-sm whitespace-nowrap">Vehicle Hiring</TabsTrigger>
+              <TabsTrigger value="booking" className="text-xs lg:text-sm whitespace-nowrap">Booking Register</TabsTrigger>
+              <TabsTrigger value="customer" className="text-xs lg:text-sm whitespace-nowrap">Customer Details</TabsTrigger>
+              <TabsTrigger value="fleet" className="text-xs lg:text-sm whitespace-nowrap">Vehicle Fleet</TabsTrigger>
+              <TabsTrigger value="driver" className="text-xs lg:text-sm whitespace-nowrap">Driver Info</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="vehicle" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Vehicle Hiring Records ({vehicleRecords.length})</CardTitle>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => setIsVehicleFormOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                  <CardTitle className="text-lg lg:text-xl">Vehicle Hiring Records ({vehicleRecords.length})</CardTitle>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => setIsVehicleFormOpen(true)} className="text-xs lg:text-sm">
+                      <Plus className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
                       Add New
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => exportToExcel('vehicle')}>
-                      <FileSpreadsheet className="h-4 w-4 mr-2" />
-                      Export Excel
+                    <Button variant="outline" size="sm" onClick={() => exportToExcel('vehicle')} className="text-xs lg:text-sm">
+                      <FileSpreadsheet className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      Excel
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => exportToPDF('vehicle')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Export PDF
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF('vehicle')} className="text-xs lg:text-sm">
+                      <FileText className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      PDF
                     </Button>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="text-xs lg:text-sm">
                       <label>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Import Excel
+                        <Upload className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                        Import
                         <input
                           type="file"
                           accept=".xlsx,.xls"
@@ -575,25 +577,25 @@ const DataManagement = () => {
           <TabsContent value="booking" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Booking Records ({bookingRecords.length})</CardTitle>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={() => setIsBookingFormOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                  <CardTitle className="text-lg lg:text-xl">Booking Records ({bookingRecords.length})</CardTitle>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => setIsBookingFormOpen(true)} className="text-xs lg:text-sm">
+                      <Plus className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
                       Add New
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => exportToExcel('booking')}>
-                      <FileSpreadsheet className="h-4 w-4 mr-2" />
-                      Export Excel
+                    <Button variant="outline" size="sm" onClick={() => exportToExcel('booking')} className="text-xs lg:text-sm">
+                      <FileSpreadsheet className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      Excel
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => exportToPDF('booking')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Export PDF
+                    <Button variant="outline" size="sm" onClick={() => exportToPDF('booking')} className="text-xs lg:text-sm">
+                      <FileText className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      PDF
                     </Button>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm" asChild className="text-xs lg:text-sm">
                       <label>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Import Excel
+                        <Upload className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                        Import
                         <input
                           type="file"
                           accept=".xlsx,.xls"

@@ -161,38 +161,38 @@ const Analytics = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-4 lg:space-y-8">
         <div>
-          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl lg:text-4xl font-bold mb-1 lg:mb-2 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
             Analytics Dashboard
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-sm lg:text-lg text-muted-foreground">
             Real-time insights of today's new entries and operations
           </p>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-card border rounded-xl p-6 animate-pulse h-32"></div>
+              <div key={i} className="bg-card border rounded-xl p-3 lg:p-6 animate-pulse h-24 lg:h-32"></div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
             {statCards.map((card, index) => (
               <Card
                 key={index}
                 className={`relative overflow-hidden border-0 shadow-xl ${card.shadowColor} hover:shadow-2xl transition-all duration-300 hover:scale-105 transform`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-90`}></div>
-                <CardContent className="relative p-6 text-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <card.icon className="h-10 w-10 opacity-80" />
-                    <div className="h-12 w-12 bg-white/20 rounded-full blur-xl absolute -top-2 -right-2"></div>
+                <CardContent className="relative p-3 lg:p-6 text-white">
+                  <div className="flex items-center justify-between mb-2 lg:mb-4">
+                    <card.icon className="h-6 w-6 lg:h-10 lg:w-10 opacity-80" />
+                    <div className="h-8 w-8 lg:h-12 lg:w-12 bg-white/20 rounded-full blur-xl absolute -top-2 -right-2"></div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium opacity-90">{card.title}</p>
-                    <p className="text-3xl font-bold drop-shadow-lg">{card.value}</p>
+                  <div className="space-y-0.5 lg:space-y-1">
+                    <p className="text-xs lg:text-sm font-medium opacity-90 truncate">{card.title}</p>
+                    <p className="text-lg lg:text-3xl font-bold drop-shadow-lg truncate">{card.value}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -201,30 +201,30 @@ const Analytics = () => {
         )}
 
         <Card className="border-2 border-blue-100 shadow-xl">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b">
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-blue-600" />
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b p-4 lg:p-6">
+            <CardTitle className="text-lg lg:text-2xl flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 lg:h-6 lg:w-6 text-blue-600" />
               New Entries Today
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-4 lg:p-6">
             {newEntries.length === 0 ? (
-              <div className="text-center py-12">
-                <Package className="h-16 w-16 mx-auto text-muted-foreground/40 mb-4" />
-                <p className="text-muted-foreground text-lg">No new entries today</p>
+              <div className="text-center py-8 lg:py-12">
+                <Package className="h-12 w-12 lg:h-16 lg:w-16 mx-auto text-muted-foreground/40 mb-3 lg:mb-4" />
+                <p className="text-sm lg:text-lg text-muted-foreground">No new entries today</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 lg:space-y-4">
                 {newEntries.map((entry) => (
                   <div
                     key={entry.id}
-                    className="p-5 rounded-xl border-2 border-gray-100 hover:border-blue-200 bg-gradient-to-r from-white to-blue-50/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] transform"
+                    className="p-3 lg:p-5 rounded-xl border-2 border-gray-100 hover:border-blue-200 bg-gradient-to-r from-white to-blue-50/30 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] transform"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 lg:gap-4">
                       <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
                           <Badge
-                            className={`${
+                            className={`text-xs lg:text-sm ${
                               entry.type === "booking"
                                 ? "bg-gradient-to-r from-blue-500 to-cyan-500"
                                 : "bg-gradient-to-r from-emerald-500 to-teal-500"
@@ -232,9 +232,9 @@ const Analytics = () => {
                           >
                             {entry.type === "booking" ? "Booking" : "Vehicle Hiring"}
                           </Badge>
-                          <span className="text-xl font-bold text-gray-800">{entry.booking_id}</span>
+                          <span className="text-base lg:text-xl font-bold text-gray-800">{entry.booking_id}</span>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 text-xs lg:text-sm">
                           <div>
                             <span className="text-muted-foreground font-medium">
                               {entry.type === "booking" ? "Party:" : "Owner:"}
@@ -249,7 +249,7 @@ const Analytics = () => {
                               {new Date(entry.date).toLocaleDateString("en-IN")}
                             </span>
                           </div>
-                          <div className="md:col-span-2">
+                          <div className="sm:col-span-2">
                             <span className="text-muted-foreground font-medium">Route:</span>
                             <span className="ml-2 font-semibold text-blue-600">
                               {entry.from_location} → {entry.to_location}
@@ -257,13 +257,13 @@ const Analytics = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="text-right space-y-2">
-                        <div className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                      <div className="flex lg:flex-col items-center lg:items-end justify-between lg:justify-start lg:text-right gap-2">
+                        <div className="text-lg lg:text-2xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
                           ₹{entry.freight.toLocaleString("en-IN")}
                         </div>
                         <Badge
                           variant={entry.payment_status === "Completed" ? "secondary" : "destructive"}
-                          className="shadow-md"
+                          className="shadow-md text-xs lg:text-sm"
                         >
                           {entry.payment_status}
                         </Badge>

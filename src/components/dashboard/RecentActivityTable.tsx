@@ -68,28 +68,28 @@ const RecentActivityTable = ({ activities }: RecentActivityTableProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold">Recent Activity</h3>
-          <p className="text-sm text-muted-foreground">Latest bookings and vehicle hiring records</p>
+          <h3 className="text-base lg:text-lg font-semibold">Recent Activity</h3>
+          <p className="text-xs lg:text-sm text-muted-foreground">Latest bookings and vehicle hiring records</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={exportToCSV}>
-            <FileText className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={exportToCSV} className="text-xs lg:text-sm">
+            <FileText className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
             CSV
           </Button>
-          <Button variant="outline" size="sm" onClick={exportToExcel}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={exportToExcel} className="text-xs lg:text-sm">
+            <Download className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
             Excel
           </Button>
-          <Button variant="outline" size="sm" onClick={exportToPDF}>
-            <FileText className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={exportToPDF} className="text-xs lg:text-sm">
+            <FileText className="h-3.5 w-3.5 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
             PDF
           </Button>
         </div>
       </div>
       
-      <div className="border rounded-lg overflow-hidden">
+      <div className="hidden lg:block border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
@@ -133,6 +133,55 @@ const RecentActivityTable = ({ activities }: RecentActivityTableProps) => {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-3">
+        {activities.length === 0 ? (
+          <div className="border rounded-lg p-8 text-center text-muted-foreground">
+            No recent activity found
+          </div>
+        ) : (
+          activities.map((activity) => (
+            <div key={activity.id} className="border rounded-lg p-4 hover:bg-muted/30 transition-colors">
+              <div className="space-y-2">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Booking ID</p>
+                    <p className="text-sm font-medium">{activity.id}</p>
+                  </div>
+                  <Badge variant={activity.type === 'Booking' ? 'default' : 'secondary'}>
+                    {activity.type}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Party/Owner</p>
+                    <p className="text-sm font-medium">{activity.party_owner}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Date</p>
+                    <p className="text-sm font-medium">{activity.date}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Amount</p>
+                    <p className="text-sm font-semibold">₹{activity.amount.toLocaleString('en-IN')}</p>
+                  </div>
+                  <Badge variant={
+                    activity.status === 'Pending' ? 'warning' :
+                    activity.status === 'Completed' ? 'default' : 'secondary'
+                  }>
+                    {activity.status}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
