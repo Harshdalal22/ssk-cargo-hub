@@ -1,16 +1,20 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { supabase } from "@/integrations/supabase/client"
+import { toast } from "sonner"
 
 interface DriverInformationFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  editData?: any;
+  isOpen: boolean
+  onClose: () => void
+  editData?: any
 }
 
 export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInformationFormProps) => {
@@ -24,8 +28,8 @@ export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInfor
     current_vehicle: "",
     status: "Available",
     address: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (editData) {
@@ -39,59 +43,63 @@ export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInfor
         current_vehicle: editData.current_vehicle || "",
         status: editData.status || "Available",
         address: editData.address || "",
-      });
+      })
     } else {
-      generateDriverId();
+      setFormData({
+        driver_id: "",
+        driver_name: "",
+        phone_number: "",
+        license_number: "",
+        license_expiry: "",
+        experience_years: "",
+        current_vehicle: "",
+        status: "Available",
+        address: "",
+      })
     }
-  }, [editData, isOpen]);
-
-  const generateDriverId = async () => {
-    const { count } = await supabase
-      .from('driver_information')
-      .select('*', { count: 'exact', head: true });
-    
-    const newId = `DRV${String((count || 0) + 1).padStart(6, '0')}`;
-    setFormData(prev => ({ ...prev, driver_id: newId }));
-  };
+  }, [editData, isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) throw new Error("No user found")
 
-      const dataToSubmit = {
+      const basePayload = {
         ...formData,
-        experience_years: formData.experience_years ? parseFloat(formData.experience_years) : null,
+        experience_years: formData.experience_years ? Number.parseFloat(formData.experience_years) : null,
         created_by: user.id,
-      };
-
-      if (editData) {
-        const { error } = await supabase
-          .from('driver_information')
-          .update(dataToSubmit)
-          .eq('id', editData.id);
-
-        if (error) throw error;
-        toast.success("Driver updated successfully");
-      } else {
-        const { error } = await supabase
-          .from('driver_information')
-          .insert([dataToSubmit]);
-
-        if (error) throw error;
-        toast.success("Driver added successfully");
       }
 
-      onClose();
+      if (editData) {
+        const { driver_id: _omit, ...updatePayload } = basePayload
+        const { error } = await supabase.from("driver_information").update(updatePayload).eq("id", editData.id)
+
+        if (error) throw error
+        toast.success("Driver updated successfully")
+      } else {
+        const { driver_id: _omit, ...insertPayload } = basePayload
+        const { error, data } = await supabase.from("driver_information").insert([insertPayload]).select().single()
+
+        if (error) throw error
+        setFormData({ ...formData, driver_id: data.driver_id })
+        toast.success("Driver added successfully")
+      }
+
+      onClose()
     } catch (error: any) {
-      toast.error(error.message);
+      const msg = (error?.message || "").toLowerCase().includes("duplicate key")
+        ? "Duplicate value detected (e.g., license or phone). Please use unique values."
+        : error?.message || "An error occurred"
+      toast.error(msg)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -103,7 +111,7 @@ export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInfor
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Driver ID</Label>
-              <Input value={formData.driver_id} disabled />
+              <Input value={formData.driver_id} placeholder="Will be assigned on save" disabled />
             </div>
             <div>
               <Label>Driver Name *</Label>
@@ -170,10 +178,7 @@ export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInfor
             </div>
             <div className="col-span-2">
               <Label>Address</Label>
-              <Input
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              />
+              <Input value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
             </div>
           </div>
 
@@ -188,5 +193,5 @@ export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInfor
         </form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
