@@ -44,6 +44,8 @@ interface VehicleHiring {
   other_expenses: number;
   total_balance: number;
   pod_status: string;
+  pod_received_status: string;
+  pod_received_date: string | null;
   payment_status: string;
 }
 
@@ -64,6 +66,8 @@ interface Booking {
   balance: number;
   other_expenses: number;
   total_balance: number;
+  pod_received_status: string;
+  pod_received_date: string | null;
   payment_status: string;
 }
 
@@ -219,7 +223,7 @@ const DataManagement = () => {
     
     if (type === 'vehicle') {
       autoTable(doc, {
-        head: [['Booking ID', 'Date', 'GR Number', 'Lorry Number', 'From', 'To', 'Freight', 'Total Balance', 'POD Status', 'Payment']],
+        head: [['Booking ID', 'Date', 'GR Number', 'Lorry Number', 'From', 'To', 'Freight', 'Total Balance', 'POD Status', 'POD Received', 'POD Date', 'Payment']],
         body: vehicleRecords.map(r => [
           r.booking_id,
           new Date(r.date).toLocaleDateString(),
@@ -230,13 +234,17 @@ const DataManagement = () => {
           `₹${r.freight}`,
           `₹${r.total_balance}`,
           r.pod_status,
+          r.pod_received_status || 'Not Received',
+          r.pod_received_date ? new Date(r.pod_received_date).toLocaleDateString() : '-',
           r.payment_status
         ]),
         startY: 25,
+        theme: 'striped',
+        styles: { fontSize: 8 }
       });
     } else {
       autoTable(doc, {
-        head: [['Booking ID', 'Party Name', 'Date', 'GR Number', 'Lorry', 'From', 'To', 'Weight', 'Freight', 'Total Balance', 'Payment']],
+        head: [['Booking ID', 'Party Name', 'Date', 'GR Number', 'Lorry', 'From', 'To', 'Weight', 'Freight', 'Total Balance', 'POD Received', 'POD Date', 'Payment']],
         body: bookingRecords.map(r => [
           r.booking_id,
           r.party_name,
@@ -248,9 +256,13 @@ const DataManagement = () => {
           `${r.weight} kg`,
           `₹${r.freight}`,
           `₹${r.total_balance}`,
+          r.pod_received_status || 'Not Received',
+          r.pod_received_date ? new Date(r.pod_received_date).toLocaleDateString() : '-',
           r.payment_status
         ]),
         startY: 25,
+        theme: 'striped',
+        styles: { fontSize: 8 }
       });
     }
     
@@ -308,9 +320,29 @@ const DataManagement = () => {
     if (!deleteId || !deleteType) return;
 
     try {
-      const table = deleteType === 'vehicle' ? 'vehicle_hiring_details' : 'booking_register';
+      let table = '';
+      switch (deleteType) {
+        case 'vehicle':
+          table = 'vehicle_hiring_details';
+          break;
+        case 'booking':
+          table = 'booking_register';
+          break;
+        case 'customer':
+          table = 'customer_details';
+          break;
+        case 'fleet':
+          table = 'vehicle_fleet';
+          break;
+        case 'driver':
+          table = 'driver_information';
+          break;
+        default:
+          throw new Error('Invalid delete type');
+      }
+
       const { error } = await supabase.from(table).delete().eq("id", deleteId);
-      
+
       if (error) throw error;
       toast.success("Record deleted successfully");
       fetchAllRecords();
@@ -364,6 +396,8 @@ const DataManagement = () => {
             <th className="border p-2 text-sm font-medium">Other Expenses</th>
             <th className="border p-2 text-sm font-medium">Total Balance</th>
             <th className="border p-2 text-sm font-medium">POD Status</th>
+            <th className="border p-2 text-sm font-medium">POD Received</th>
+            <th className="border p-2 text-sm font-medium">POD Date</th>
             <th className="border p-2 text-sm font-medium">Payment Status</th>
             <th className="border p-2 text-sm font-medium">Actions</th>
           </tr>
@@ -391,7 +425,15 @@ const DataManagement = () => {
                 </Badge>
               </td>
               <td className="border p-2 text-sm text-center">
-                <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
+                <Badge variant={record.pod_received_status === "Received" ? "default" : "secondary"}>
+                  {record.pod_received_status || "Not Received"}
+                </Badge>
+              </td>
+              <td className="border p-2 text-sm">
+                {record.pod_received_date ? new Date(record.pod_received_date).toLocaleDateString() : '-'}
+              </td>
+              <td className="border p-2 text-sm text-center">
+                <Badge variant={record.payment_status === "Completed" ? "default" : "destructive"}>
                   {record.payment_status}
                 </Badge>
               </td>
@@ -441,6 +483,8 @@ const DataManagement = () => {
             <th className="border p-2 text-sm font-medium">Balance</th>
             <th className="border p-2 text-sm font-medium">Other Expenses</th>
             <th className="border p-2 text-sm font-medium">Total Balance</th>
+            <th className="border p-2 text-sm font-medium">POD Received</th>
+            <th className="border p-2 text-sm font-medium">POD Date</th>
             <th className="border p-2 text-sm font-medium">Payment Status</th>
             <th className="border p-2 text-sm font-medium">Actions</th>
           </tr>
@@ -464,7 +508,15 @@ const DataManagement = () => {
               <td className="border p-2 text-sm text-right">₹{record.other_expenses.toLocaleString()}</td>
               <td className="border p-2 text-sm text-right font-medium">₹{record.total_balance.toLocaleString()}</td>
               <td className="border p-2 text-sm text-center">
-                <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
+                <Badge variant={record.pod_received_status === "Received" ? "default" : "secondary"}>
+                  {record.pod_received_status || "Not Received"}
+                </Badge>
+              </td>
+              <td className="border p-2 text-sm">
+                {record.pod_received_date ? new Date(record.pod_received_date).toLocaleDateString() : '-'}
+              </td>
+              <td className="border p-2 text-sm text-center">
+                <Badge variant={record.payment_status === "Completed" ? "default" : "destructive"}>
                   {record.payment_status}
                 </Badge>
               </td>

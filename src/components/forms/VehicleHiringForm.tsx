@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Plus, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface VehicleHiringFormProps {
   isOpen: boolean;
@@ -13,10 +16,18 @@ interface VehicleHiringFormProps {
   editData?: any;
 }
 
+interface Payment {
+  id?: string;
+  amount: string;
+  payment_date: string;
+  notes?: string;
+}
+
 const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [formData, setFormData] = useState({
     booking_id: "",
     date: "",
@@ -31,6 +42,8 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
     advance: "",
     other_expenses: "",
     pod_status: "Pending",
+    pod_received_status: "Not Received",
+    pod_received_date: "",
     payment_status: "Pending",
   });
 
@@ -54,10 +67,14 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
         advance: editData.advance?.toString() || "",
         other_expenses: editData.other_expenses?.toString() || "",
         pod_status: editData.pod_status || "Pending",
+        pod_received_status: editData.pod_received_status || "Not Received",
+        pod_received_date: editData.pod_received_date || "",
         payment_status: editData.payment_status || "Pending",
       });
+      fetchPayments(editData.id);
     } else {
       generateBookingId();
+      setPayments([{ amount: "", payment_date: new Date().toISOString().split('T')[0], notes: "" }]);
     }
   }, [editData, isOpen]);
 
@@ -66,9 +83,29 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
       supabase.from('vehicle_fleet').select('*').order('lorry_number'),
       supabase.from('driver_information').select('*').order('driver_name')
     ]);
-    
+
     if (vehiclesRes.data) setVehicles(vehiclesRes.data);
     if (driversRes.data) setDrivers(driversRes.data);
+  };
+
+  const fetchPayments = async (recordId: string) => {
+    const { data } = await supabase
+      .from('advance_payments')
+      .select('*')
+      .eq('record_type', 'vehicle_hiring')
+      .eq('record_id', recordId)
+      .order('payment_date', { ascending: false });
+
+    if (data && data.length > 0) {
+      setPayments(data.map(p => ({
+        id: p.id,
+        amount: p.amount.toString(),
+        payment_date: p.payment_date,
+        notes: p.notes || ""
+      })));
+    } else {
+      setPayments([{ amount: "", payment_date: new Date().toISOString().split('T')[0], notes: "" }]);
+    }
   };
 
   const generateBookingId = async () => {
@@ -78,6 +115,32 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
     }
   };
 
+  const addPayment = () => {
+    setPayments([...payments, { amount: "", payment_date: new Date().toISOString().split('T')[0], notes: "" }]);
+  };
+
+  const removePayment = (index: number) => {
+    if (payments.length > 1) {
+      setPayments(payments.filter((_, i) => i !== index));
+    }
+  };
+
+  const updatePayment = (index: number, field: keyof Payment, value: string) => {
+    const newPayments = [...payments];
+    newPayments[index] = { ...newPayments[index], [field]: value };
+    setPayments(newPayments);
+  };
+
+  const getTotalPayments = () => {
+    return payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+  };
+
+  const calculatePaymentStatus = () => {
+    const freight = parseFloat(formData.freight) || 0;
+    const totalPaid = getTotalPayments();
+    return totalPaid >= freight ? "Completed" : "Pending";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -85,6 +148,9 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+
+      const totalPayments = getTotalPayments();
+      const calculatedPaymentStatus = calculatePaymentStatus();
 
       const dataToSubmit = {
         booking_id: formData.booking_id,
@@ -97,12 +163,16 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
         from_location: formData.from_location,
         to_location: formData.to_location,
         freight: parseFloat(formData.freight) || 0,
-        advance: parseFloat(formData.advance) || 0,
+        advance: totalPayments,
         other_expenses: parseFloat(formData.other_expenses) || 0,
         pod_status: formData.pod_status,
-        payment_status: formData.payment_status,
+        pod_received_status: formData.pod_received_status,
+        pod_received_date: formData.pod_received_status === "Received" ? formData.pod_received_date : null,
+        payment_status: calculatedPaymentStatus,
         created_by: user.id,
       };
+
+      let recordId: string;
 
       if (editData) {
         const { error } = await supabase
@@ -111,16 +181,43 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
           .eq("id", editData.id);
 
         if (error) throw error;
-        toast.success("Record updated successfully");
+        recordId = editData.id;
+
+        await supabase
+          .from('advance_payments')
+          .delete()
+          .eq('record_type', 'vehicle_hiring')
+          .eq('record_id', recordId);
       } else {
-        const { error } = await supabase
+        const { data: insertedData, error } = await supabase
           .from("vehicle_hiring_details")
-          .insert([dataToSubmit]);
+          .insert([dataToSubmit])
+          .select()
+          .single();
 
         if (error) throw error;
-        toast.success("Record added successfully");
+        recordId = insertedData.id;
       }
 
+      const validPayments = payments.filter(p => parseFloat(p.amount) > 0);
+      if (validPayments.length > 0) {
+        const paymentsToInsert = validPayments.map(p => ({
+          record_type: 'vehicle_hiring',
+          record_id: recordId,
+          amount: parseFloat(p.amount),
+          payment_date: p.payment_date,
+          notes: p.notes || null,
+          created_by: user.id
+        }));
+
+        const { error: paymentError } = await supabase
+          .from('advance_payments')
+          .insert(paymentsToInsert);
+
+        if (paymentError) throw paymentError;
+      }
+
+      toast.success(editData ? "Record updated successfully" : "Record added successfully");
       onClose();
     } catch (error: any) {
       toast.error(error.message || "An error occurred");
@@ -131,7 +228,7 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editData ? "Edit" : "Add"} Vehicle Hiring Record</DialogTitle>
         </DialogHeader>
@@ -180,12 +277,12 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="lorry_number">Lorry Number *</Label>
-              <Select 
-                value={formData.lorry_number} 
+              <Select
+                value={formData.lorry_number}
                 onValueChange={(value) => {
                   const vehicle = vehicles.find(v => v.lorry_number === value);
-                  setFormData({ 
-                    ...formData, 
+                  setFormData({
+                    ...formData,
                     lorry_number: value,
                     owner_name: vehicle?.owner_name || formData.owner_name
                   });
@@ -205,8 +302,8 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
             </div>
             <div className="space-y-2">
               <Label htmlFor="driver_number">Driver</Label>
-              <Select 
-                value={formData.driver_number} 
+              <Select
+                value={formData.driver_number}
                 onValueChange={(value) => setFormData({ ...formData, driver_number: value })}
               >
                 <SelectTrigger className="bg-background">
@@ -253,7 +350,7 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="freight">Freight (₹) *</Label>
               <Input
@@ -262,17 +359,6 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
                 step="0.01"
                 value={formData.freight}
                 onChange={(e) => setFormData({ ...formData, freight: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="advance">Advance (₹) *</Label>
-              <Input
-                id="advance"
-                type="number"
-                step="0.01"
-                value={formData.advance}
-                onChange={(e) => setFormData({ ...formData, advance: e.target.value })}
                 required
               />
             </div>
@@ -288,6 +374,73 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
             </div>
           </div>
 
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Advance Payments</CardTitle>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm">
+                    Total: <span className="font-semibold">₹{getTotalPayments().toLocaleString()}</span>
+                  </div>
+                  <Button type="button" size="sm" onClick={addPayment} variant="outline">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Payment
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {payments.map((payment, index) => (
+                <div key={index} className="flex gap-2 items-start">
+                  <div className="flex-1 grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Amount (₹)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Amount"
+                        value={payment.amount}
+                        onChange={(e) => updatePayment(index, 'amount', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Date</Label>
+                      <Input
+                        type="date"
+                        value={payment.payment_date}
+                        onChange={(e) => updatePayment(index, 'payment_date', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Notes</Label>
+                      <Input
+                        placeholder="Optional notes"
+                        value={payment.notes}
+                        onChange={(e) => updatePayment(index, 'notes', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  {payments.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="mt-6"
+                      onClick={() => removePayment(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <div className="pt-2 border-t">
+                <Badge variant={calculatePaymentStatus() === "Completed" ? "secondary" : "destructive"}>
+                  Payment Status: {calculatePaymentStatus()}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="pod_status">POD Status</Label>
@@ -302,18 +455,38 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="payment_status">Payment Status</Label>
-              <Select value={formData.payment_status} onValueChange={(value) => setFormData({ ...formData, payment_status: value })}>
+              <Label htmlFor="pod_received_status">POD Received</Label>
+              <Select
+                value={formData.pod_received_status}
+                onValueChange={(value) => setFormData({
+                  ...formData,
+                  pod_received_status: value,
+                  pod_received_date: value === "Not Received" ? "" : formData.pod_received_date
+                })}
+              >
                 <SelectTrigger className="bg-background">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
+                  <SelectItem value="Not Received">Not Received</SelectItem>
+                  <SelectItem value="Received">Received</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
+
+          {formData.pod_received_status === "Received" && (
+            <div className="space-y-2">
+              <Label htmlFor="pod_received_date">POD Received Date *</Label>
+              <Input
+                id="pod_received_date"
+                type="date"
+                value={formData.pod_received_date}
+                onChange={(e) => setFormData({ ...formData, pod_received_date: e.target.value })}
+                required
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
