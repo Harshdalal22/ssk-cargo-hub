@@ -83,18 +83,53 @@ export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInfor
         toast.success("Driver updated successfully")
       } else {
         const { driver_id: _omit, ...insertPayload } = basePayload
-        const { error, data } = await supabase.from("driver_information").insert([insertPayload]).select().single()
 
-        if (error) throw error
-        setFormData({ ...formData, driver_id: data.driver_id })
+        const attemptDefaultInsert = async () => {
+          return await supabase.from("driver_information").insert([insertPayload]).select().single()
+        }
+
+        const tryGenerateDriverId = async (): Promise<string> => {
+          try {
+            const { data, error } = await supabase.rpc("generate_driver_id")
+            if (!error && data) return data as string
+          } catch {}
+          const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
+          const ts = new Date()
+            .toISOString()
+            .replace(/[-:TZ.]/g, "")
+            .slice(0, 14)
+          return `DRV-${ts}-${rand}`
+        }
+
+        let inserted = await attemptDefaultInsert()
+        if (
+          inserted.error &&
+          /null value in column "driver_id"|violates not-null constraint/i.test(inserted.error.message)
+        ) {
+          const fallbackId = await tryGenerateDriverId()
+          inserted = await supabase
+            .from("driver_information")
+            .insert([{ ...insertPayload, driver_id: fallbackId }])
+            .select()
+            .single()
+        }
+
+        if (inserted.error) throw inserted.error
+        setFormData({ ...formData, driver_id: inserted.data.driver_id })
         toast.success("Driver added successfully")
       }
 
       onClose()
     } catch (error: any) {
-      const msg = (error?.message || "").toLowerCase().includes("duplicate key")
-        ? "Duplicate value detected (e.g., license or phone). Please use unique values."
-        : error?.message || "An error occurred"
+      const msg = (() => {
+        const m = (error?.message || "").toLowerCase()
+        if (m.includes("duplicate key"))
+          return "Duplicate value detected (e.g., license or phone). Please use unique values."
+        if (m.includes("not-null constraint") || m.includes('null value in column "driver_id"')) {
+          return "Driver ID generator was unavailable. We attempted a safe fallback. Please try again."
+        }
+        return error?.message || "An error occurred"
+      })()
       toast.error(msg)
     } finally {
       setIsSubmitting(false)
