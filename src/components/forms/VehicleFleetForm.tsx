@@ -1,16 +1,20 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { supabase } from "@/integrations/supabase/client"
+import { toast } from "sonner"
 
 interface VehicleFleetFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  editData?: any;
+  isOpen: boolean
+  onClose: () => void
+  editData?: any
 }
 
 export const VehicleFleetForm = ({ isOpen, onClose, editData }: VehicleFleetFormProps) => {
@@ -25,8 +29,8 @@ export const VehicleFleetForm = ({ isOpen, onClose, editData }: VehicleFleetForm
     insurance_expiry: "",
     fitness_expiry: "",
     status: "Available",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (editData) {
@@ -41,59 +45,103 @@ export const VehicleFleetForm = ({ isOpen, onClose, editData }: VehicleFleetForm
         insurance_expiry: editData.insurance_expiry || "",
         fitness_expiry: editData.fitness_expiry || "",
         status: editData.status || "Available",
-      });
+      })
     } else {
-      generateVehicleId();
+      setFormData({
+        vehicle_id: "",
+        lorry_number: "",
+        lorry_type: "",
+        capacity_tons: "",
+        owner_name: "",
+        owner_phone: "",
+        registration_date: "",
+        insurance_expiry: "",
+        fitness_expiry: "",
+        status: "Available",
+      })
     }
-  }, [editData, isOpen]);
-
-  const generateVehicleId = async () => {
-    const { count } = await supabase
-      .from('vehicle_fleet')
-      .select('*', { count: 'exact', head: true });
-    
-    const newId = `VEH${String((count || 0) + 1).padStart(6, '0')}`;
-    setFormData(prev => ({ ...prev, vehicle_id: newId }));
-  };
+  }, [editData, isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) throw new Error("No user found")
 
-      const dataToSubmit = {
+      const basePayload = {
         ...formData,
-        capacity_tons: formData.capacity_tons ? parseFloat(formData.capacity_tons) : null,
+        capacity_tons: formData.capacity_tons ? Number.parseFloat(formData.capacity_tons) : null,
         created_by: user.id,
-      };
-
-      if (editData) {
-        const { error } = await supabase
-          .from('vehicle_fleet')
-          .update(dataToSubmit)
-          .eq('id', editData.id);
-
-        if (error) throw error;
-        toast.success("Vehicle updated successfully");
-      } else {
-        const { error } = await supabase
-          .from('vehicle_fleet')
-          .insert([dataToSubmit]);
-
-        if (error) throw error;
-        toast.success("Vehicle added successfully");
       }
 
-      onClose();
+      if (editData) {
+        const { vehicle_id: _omit, ...updatePayload } = basePayload
+        const { error } = await supabase.from("vehicle_fleet").update(updatePayload).eq("id", editData.id)
+
+        if (error) throw error
+        toast.success("Vehicle updated successfully")
+      } else {
+        const { vehicle_id: _omit, ...insertPayload } = basePayload
+
+        const attemptDefaultInsert = async () => {
+          return await supabase.from("vehicle_fleet").insert([insertPayload]).select().single()
+        }
+
+        const tryGenerateVehicleId = async (): Promise<string> => {
+          // Try RPC if our migration is applied
+          try {
+            const { data, error } = await supabase.rpc("generate_vehicle_id")
+            if (!error && data) return data as string
+          } catch {
+            // ignore and fallback
+          }
+          // Fallback: collision-resistant local ID
+          const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
+          const ts = new Date()
+            .toISOString()
+            .replace(/[-:TZ.]/g, "")
+            .slice(0, 14)
+          return `VEH-${ts}-${rand}`
+        }
+
+        let inserted = await attemptDefaultInsert()
+        if (
+          inserted.error &&
+          /null value in column "vehicle_id"|violates not-null constraint/i.test(inserted.error.message)
+        ) {
+          const fallbackId = await tryGenerateVehicleId()
+          inserted = await supabase
+            .from("vehicle_fleet")
+            .insert([{ ...insertPayload, vehicle_id: fallbackId }])
+            .select()
+            .single()
+        }
+
+        if (inserted.error) throw inserted.error
+        setFormData((prev) => ({ ...prev, vehicle_id: inserted.data.vehicle_id }))
+        toast.success("Vehicle added successfully")
+      }
+
+      onClose()
     } catch (error: any) {
-      toast.error(error.message);
+      const msg = (() => {
+        const m = (error?.message || "").toLowerCase()
+        if (m.includes("duplicate key"))
+          return "Duplicate value detected (e.g., lorry number). Please use unique values."
+        if (m.includes("not-null constraint") || m.includes('null value in column "vehicle_id"')) {
+          return "Vehicle ID generator was unavailable. We attempted a safe fallback. Please try again."
+        }
+        return error?.message || "An error occurred"
+      })()
+      toast.error(msg)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -105,7 +153,7 @@ export const VehicleFleetForm = ({ isOpen, onClose, editData }: VehicleFleetForm
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Vehicle ID</Label>
-              <Input value={formData.vehicle_id} disabled />
+              <Input value={formData.vehicle_id} placeholder="Will be assigned on save" disabled />
             </div>
             <div>
               <Label>Lorry Number *</Label>
@@ -198,5 +246,5 @@ export const VehicleFleetForm = ({ isOpen, onClose, editData }: VehicleFleetForm
         </form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
