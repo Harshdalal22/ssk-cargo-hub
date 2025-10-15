@@ -210,7 +210,7 @@ const DataManagement = () => {
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, type === 'vehicle' ? 'Vehicle Hiring' : 'Bookings');
-    XLSX.writeFile(wb, ${type}_records_${new Date().toISOString().split('T')[0]}.xlsx);
+    XLSX.writeFile(wb, `${type}_records_${new Date().toISOString().split('T')[0]}.xlsx`);
     toast.success("Excel file downloaded successfully");
   };
 
@@ -231,8 +231,8 @@ const DataManagement = () => {
           r.lorry_number,
           r.from_location,
           r.to_location,
-          ₹${r.freight},
-          ₹${r.total_balance},
+          `₹${r.freight}`,
+          `₹${r.total_balance}`,
           r.pod_status,
           r.pod_received_status || 'Not Received',
           r.pod_received_date ? new Date(r.pod_received_date).toLocaleDateString() : '-',
@@ -253,9 +253,9 @@ const DataManagement = () => {
           r.lorry_number,
           r.from_location,
           r.to_location,
-          ${r.weight} kg,
-          ₹${r.freight},
-          ₹${r.total_balance},
+          `${r.weight} kg`,
+          `₹${r.freight}`,
+          `₹${r.total_balance}`,
           r.pod_received_status || 'Not Received',
           r.pod_received_date ? new Date(r.pod_received_date).toLocaleDateString() : '-',
           r.payment_status
@@ -266,7 +266,7 @@ const DataManagement = () => {
       });
     }
     
-    doc.save(${type}_records_${new Date().toISOString().split('T')[0]}.pdf);
+    doc.save(`${type}_records_${new Date().toISOString().split('T')[0]}.pdf`);
     toast.success("PDF file downloaded successfully");
   };
 
@@ -298,7 +298,7 @@ const DataManagement = () => {
         const { error } = await supabase.from(table).insert(records);
         
         if (error) throw error;
-        toast.success(Successfully imported ${records.length} records);
+        toast.success(`Successfully imported ${records.length} records`);
         fetchAllRecords();
       } catch (error) {
         toast.error("Error importing data. Please check the file format.");
