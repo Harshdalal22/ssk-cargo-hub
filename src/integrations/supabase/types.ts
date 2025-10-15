@@ -14,42 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      advance_payments: {
-        Row: {
-          amount: number
-          created_at: string | null
-          created_by: string
-          id: string
-          notes: string | null
-          payment_date: string
-          record_id: string
-          record_type: string
-          updated_at: string | null
-        }
-        Insert: {
-          amount?: number
-          created_at?: string | null
-          created_by: string
-          id?: string
-          notes?: string | null
-          payment_date?: string
-          record_id: string
-          record_type: string
-          updated_at?: string | null
-        }
-        Update: {
-          amount?: number
-          created_at?: string | null
-          created_by?: string
-          id?: string
-          notes?: string | null
-          payment_date?: string
-          record_id?: string
-          record_type?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       booking_register: {
         Row: {
           advance: number
@@ -68,8 +32,6 @@ export type Database = {
           other_expenses: number
           party_name: string
           payment_status: string
-          pod_received_date: string | null
-          pod_received_status: string | null
           to_location: string
           total_balance: number | null
           updated_at: string | null
@@ -92,8 +54,6 @@ export type Database = {
           other_expenses?: number
           party_name: string
           payment_status?: string
-          pod_received_date?: string | null
-          pod_received_status?: string | null
           to_location: string
           total_balance?: number | null
           updated_at?: string | null
@@ -116,8 +76,6 @@ export type Database = {
           other_expenses?: number
           party_name?: string
           payment_status?: string
-          pod_received_date?: string | null
-          pod_received_status?: string | null
           to_location?: string
           total_balance?: number | null
           updated_at?: string | null
@@ -329,8 +287,6 @@ export type Database = {
           other_expenses: number
           owner_name: string
           payment_status: string
-          pod_received_date: string | null
-          pod_received_status: string | null
           pod_status: string
           to_location: string
           total_balance: number | null
@@ -353,8 +309,6 @@ export type Database = {
           other_expenses?: number
           owner_name: string
           payment_status?: string
-          pod_received_date?: string | null
-          pod_received_status?: string | null
           pod_status?: string
           to_location: string
           total_balance?: number | null
@@ -377,8 +331,6 @@ export type Database = {
           other_expenses?: number
           owner_name?: string
           payment_status?: string
-          pod_received_date?: string | null
-          pod_received_status?: string | null
           pod_status?: string
           to_location?: string
           total_balance?: number | null
