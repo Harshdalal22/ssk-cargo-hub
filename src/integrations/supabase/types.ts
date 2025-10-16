@@ -1,10 +1,4 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
@@ -32,6 +26,8 @@ export type Database = {
           other_expenses: number
           party_name: string
           payment_status: string
+          pod_received_status: string | null
+          pod_received_date: string | null
           to_location: string
           total_balance: number | null
           updated_at: string | null
@@ -54,6 +50,8 @@ export type Database = {
           other_expenses?: number
           party_name: string
           payment_status?: string
+          pod_received_status?: string | null
+          pod_received_date?: string | null
           to_location: string
           total_balance?: number | null
           updated_at?: string | null
@@ -76,6 +74,8 @@ export type Database = {
           other_expenses?: number
           party_name?: string
           payment_status?: string
+          pod_received_status?: string | null
+          pod_received_date?: string | null
           to_location?: string
           total_balance?: number | null
           updated_at?: string | null
@@ -288,6 +288,8 @@ export type Database = {
           owner_name: string
           payment_status: string
           pod_status: string
+          pod_received_status: string | null
+          pod_received_date: string | null
           to_location: string
           total_balance: number | null
           updated_at: string | null
@@ -310,6 +312,8 @@ export type Database = {
           owner_name: string
           payment_status?: string
           pod_status?: string
+          pod_received_status?: string | null
+          pod_received_date?: string | null
           to_location: string
           total_balance?: number | null
           updated_at?: string | null
@@ -332,6 +336,8 @@ export type Database = {
           owner_name?: string
           payment_status?: string
           pod_status?: string
+          pod_received_status?: string | null
+          pod_received_date?: string | null
           to_location?: string
           total_balance?: number | null
           updated_at?: string | null
@@ -366,7 +372,7 @@ export type Database = {
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof DatabaseWithoutInternals, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
@@ -387,10 +393,8 @@ export type Tables<
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -398,9 +402,7 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -423,9 +425,7 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -448,14 +448,14 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+      ? keyof DefaultSchema["Enums"]
+      : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -472,13 +472,19 @@ export type CompositeTypes<
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : DefaultSchema["CompositeTypes"] extends { [K in keyof DefaultSchema["CompositeTypes"]]: infer CT }
+      ? CT extends { name: infer N }
+        ? N
+        : never
+      : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : DefaultSchema["CompositeTypes"] extends { [K in keyof DefaultSchema["CompositeTypes"]]: infer CT }
+    ? CT extends { name: infer N }
+      ? DefaultSchema["CompositeTypes"][N]
+      : never
     : never
 
 export const Constants = {
