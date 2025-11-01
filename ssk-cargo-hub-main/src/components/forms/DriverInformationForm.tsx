@@ -63,8 +63,15 @@ export const DriverInformationForm = ({ isOpen, onClose, editData }: DriverInfor
       if (!user) throw new Error("No user found");
 
       const dataToSubmit = {
-        ...formData,
+        driver_id: formData.driver_id,
+        driver_name: formData.driver_name,
+        phone_number: formData.phone_number,
+        license_number: formData.license_number,
+        license_expiry: formData.license_expiry,
         experience_years: formData.experience_years ? parseFloat(formData.experience_years) : null,
+        current_vehicle: formData.current_vehicle || null,
+        status: formData.status,
+        address: formData.address || null,
         created_by: user.id,
       };
 
