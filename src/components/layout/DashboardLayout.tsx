@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 import sskLogo from "@/assets/ssk-logo.jpeg";
@@ -60,6 +61,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { icon: TrendingUp, label: "Analytics", path: "/analytics", openInNewTab: false },
     { icon: Truck, label: "Vehicle Hiring", path: "/vehicle-hiring", openInNewTab: false },
     { icon: FileText, label: "Booking Register", path: "/booking-register", openInNewTab: false },
+    { icon: Receipt, label: "LR Management", path: "/lr-management", openInNewTab: false },
     { icon: Database, label: "Data Management", path: "/data-management", openInNewTab: false },
   ];
 

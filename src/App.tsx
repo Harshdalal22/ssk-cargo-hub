@@ -10,6 +10,7 @@ import Analytics from "./pages/Analytics";
 import DataManagement from "./pages/DataManagement";
 import VehicleHiring from "./pages/VehicleHiring";
 import BookingRegister from "./pages/BookingRegister";
+import LRManagement from "./pages/LRManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/vehicle-hiring" element={<VehicleHiring />} />
           <Route path="/booking-register" element={<BookingRegister />} />
           <Route path="/data-management" element={<DataManagement />} />
+          <Route path="/lr-management" element={<LRManagement />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

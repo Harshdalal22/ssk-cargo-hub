@@ -215,6 +215,236 @@ export type Database = {
         }
         Relationships: []
       }
+      lr_details: {
+        Row: {
+          address_of_delivery: string | null
+          agent: string | null
+          billing_party: string | null
+          billing_party_address: string | null
+          billing_party_city: string | null
+          billing_party_contact: string | null
+          billing_party_gst: string | null
+          billing_party_name: string | null
+          billing_party_pan: string | null
+          charged_weight: number | null
+          company_logo_url: string | null
+          consignee_address: string | null
+          consignee_city: string | null
+          consignee_contact: string | null
+          consignee_gst: string | null
+          consignee_name: string
+          consignee_pan: string | null
+          consignor_address: string | null
+          consignor_city: string | null
+          consignor_contact: string | null
+          consignor_gst: string | null
+          consignor_name: string
+          consignor_pan: string | null
+          created_at: string | null
+          created_by: string
+          date: string
+          design_template: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          employee: string | null
+          eway_bill_date: string | null
+          eway_bill_no: string | null
+          eway_ex_date: string | null
+          freight: number
+          from_place: string
+          gst_paid_by: string | null
+          id: string
+          invoice_amount: number | null
+          invoice_date: string | null
+          invoice_no: string | null
+          items: Json | null
+          lorry_type: string | null
+          lr_no: string
+          lr_type: string
+          method_of_packing: string | null
+          po_date: string | null
+          po_no: string | null
+          rate: number | null
+          rate_on: string | null
+          remark: string | null
+          to_place: string
+          truck_driver_no: string | null
+          truck_no: string
+          updated_at: string | null
+          weight: number
+          whatsapp_sent: boolean | null
+          whatsapp_sent_at: string | null
+        }
+        Insert: {
+          address_of_delivery?: string | null
+          agent?: string | null
+          billing_party?: string | null
+          billing_party_address?: string | null
+          billing_party_city?: string | null
+          billing_party_contact?: string | null
+          billing_party_gst?: string | null
+          billing_party_name?: string | null
+          billing_party_pan?: string | null
+          charged_weight?: number | null
+          company_logo_url?: string | null
+          consignee_address?: string | null
+          consignee_city?: string | null
+          consignee_contact?: string | null
+          consignee_gst?: string | null
+          consignee_name: string
+          consignee_pan?: string | null
+          consignor_address?: string | null
+          consignor_city?: string | null
+          consignor_contact?: string | null
+          consignor_gst?: string | null
+          consignor_name: string
+          consignor_pan?: string | null
+          created_at?: string | null
+          created_by: string
+          date: string
+          design_template?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          employee?: string | null
+          eway_bill_date?: string | null
+          eway_bill_no?: string | null
+          eway_ex_date?: string | null
+          freight?: number
+          from_place: string
+          gst_paid_by?: string | null
+          id?: string
+          invoice_amount?: number | null
+          invoice_date?: string | null
+          invoice_no?: string | null
+          items?: Json | null
+          lorry_type?: string | null
+          lr_no: string
+          lr_type?: string
+          method_of_packing?: string | null
+          po_date?: string | null
+          po_no?: string | null
+          rate?: number | null
+          rate_on?: string | null
+          remark?: string | null
+          to_place: string
+          truck_driver_no?: string | null
+          truck_no: string
+          updated_at?: string | null
+          weight?: number
+          whatsapp_sent?: boolean | null
+          whatsapp_sent_at?: string | null
+        }
+        Update: {
+          address_of_delivery?: string | null
+          agent?: string | null
+          billing_party?: string | null
+          billing_party_address?: string | null
+          billing_party_city?: string | null
+          billing_party_contact?: string | null
+          billing_party_gst?: string | null
+          billing_party_name?: string | null
+          billing_party_pan?: string | null
+          charged_weight?: number | null
+          company_logo_url?: string | null
+          consignee_address?: string | null
+          consignee_city?: string | null
+          consignee_contact?: string | null
+          consignee_gst?: string | null
+          consignee_name?: string
+          consignee_pan?: string | null
+          consignor_address?: string | null
+          consignor_city?: string | null
+          consignor_contact?: string | null
+          consignor_gst?: string | null
+          consignor_name?: string
+          consignor_pan?: string | null
+          created_at?: string | null
+          created_by?: string
+          date?: string
+          design_template?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          employee?: string | null
+          eway_bill_date?: string | null
+          eway_bill_no?: string | null
+          eway_ex_date?: string | null
+          freight?: number
+          from_place?: string
+          gst_paid_by?: string | null
+          id?: string
+          invoice_amount?: number | null
+          invoice_date?: string | null
+          invoice_no?: string | null
+          items?: Json | null
+          lorry_type?: string | null
+          lr_no?: string
+          lr_type?: string
+          method_of_packing?: string | null
+          po_date?: string | null
+          po_no?: string | null
+          rate?: number | null
+          rate_on?: string | null
+          remark?: string | null
+          to_place?: string
+          truck_driver_no?: string | null
+          truck_no?: string
+          updated_at?: string | null
+          weight?: number
+          whatsapp_sent?: boolean | null
+          whatsapp_sent_at?: string | null
+        }
+        Relationships: []
+      }
+      lr_permits: {
+        Row: {
+          ack_rec_date: string | null
+          attachment_url: string | null
+          created_at: string | null
+          created_by: string
+          id: string
+          lr_id: string
+          lr_no: string
+          remark: string | null
+          road_permit_receipt_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ack_rec_date?: string | null
+          attachment_url?: string | null
+          created_at?: string | null
+          created_by: string
+          id?: string
+          lr_id: string
+          lr_no: string
+          remark?: string | null
+          road_permit_receipt_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ack_rec_date?: string | null
+          attachment_url?: string | null
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          lr_id?: string
+          lr_no?: string
+          remark?: string | null
+          road_permit_receipt_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lr_permits_lr_id_fkey"
+            columns: ["lr_id"]
+            isOneToOne: false
+            referencedRelation: "lr_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -392,6 +622,7 @@ export type Database = {
     }
     Functions: {
       generate_booking_id: { Args: never; Returns: string }
+      generate_lr_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
