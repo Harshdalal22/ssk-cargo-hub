@@ -5,6 +5,10 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://qoxyljmaxdamprvwcipa.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFveHlsam1heGRhbXBydndjaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0Mzg0MjEsImV4cCI6MjA3NTAxNDQyMX0.iC7j4edyoFFI_mEGv8_OhfRTq6zzoLF_fWwGLWTLZrg";
 
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error('Missing Supabase environment variables');
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
