@@ -304,26 +304,16 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
             <h3 className="text-lg font-semibold text-destructive">Consignor</h3>
             <div className="space-y-2">
               <Label htmlFor="consignor_name">Name *</Label>
-              <Select onValueChange={(val) => {
-                const customer = customers.find(c => c.customer_name === val);
-                if (customer) {
-                  setValue("consignor_name", customer.customer_name);
-                  setValue("consignor_address", customer.address || '');
-                  setValue("consignor_city", '');
-                  setValue("consignor_contact", customer.phone_number || '');
-                  setValue("consignor_pan", '');
-                  setValue("consignor_gst", customer.gst_number || '');
-                }
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Consignor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => (
-                    <SelectItem key={c.id} value={c.customer_name}>{c.customer_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input 
+                {...register("consignor_name", { required: true })} 
+                placeholder="Enter or select consignor name"
+                list="consignor-list"
+              />
+              <datalist id="consignor-list">
+                {customers.map(c => (
+                  <option key={c.id} value={c.customer_name} />
+                ))}
+              </datalist>
             </div>
             <Textarea {...register("consignor_address")} placeholder="Address" rows={3} />
             <div className="grid grid-cols-2 gap-4">
@@ -341,26 +331,16 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
             <h3 className="text-lg font-semibold text-destructive">Consignee</h3>
             <div className="space-y-2">
               <Label htmlFor="consignee_name">Name *</Label>
-              <Select onValueChange={(val) => {
-                const customer = customers.find(c => c.customer_name === val);
-                if (customer) {
-                  setValue("consignee_name", customer.customer_name);
-                  setValue("consignee_address", customer.address || '');
-                  setValue("consignee_city", '');
-                  setValue("consignee_contact", customer.phone_number || '');
-                  setValue("consignee_pan", '');
-                  setValue("consignee_gst", customer.gst_number || '');
-                }
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Consignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => (
-                    <SelectItem key={c.id} value={c.customer_name}>{c.customer_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input 
+                {...register("consignee_name", { required: true })} 
+                placeholder="Enter or select consignee name"
+                list="consignee-list"
+              />
+              <datalist id="consignee-list">
+                {customers.map(c => (
+                  <option key={c.id} value={c.customer_name} />
+                ))}
+              </datalist>
             </div>
             <Textarea {...register("consignee_address")} placeholder="Address" rows={3} />
             <div className="grid grid-cols-2 gap-4">
@@ -378,26 +358,16 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
             <h3 className="text-lg font-semibold text-destructive">Billing To</h3>
             <div className="space-y-2">
               <Label htmlFor="billing_party_name">Name</Label>
-              <Select onValueChange={(val) => {
-                const customer = customers.find(c => c.customer_name === val);
-                if (customer) {
-                  setValue("billing_party_name", customer.customer_name);
-                  setValue("billing_party_address", customer.address || '');
-                  setValue("billing_party_city", '');
-                  setValue("billing_party_contact", customer.phone_number || '');
-                  setValue("billing_party_pan", '');
-                  setValue("billing_party_gst", customer.gst_number || '');
-                }
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Billing Party" />
-                </SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => (
-                    <SelectItem key={c.id} value={c.customer_name}>{c.customer_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input 
+                {...register("billing_party_name")} 
+                placeholder="Enter or select billing party name"
+                list="billing-list"
+              />
+              <datalist id="billing-list">
+                {customers.map(c => (
+                  <option key={c.id} value={c.customer_name} />
+                ))}
+              </datalist>
             </div>
             <Textarea {...register("billing_party_address")} placeholder="Address" rows={3} />
             <div className="grid grid-cols-2 gap-4">
