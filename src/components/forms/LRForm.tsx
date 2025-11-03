@@ -86,8 +86,9 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Convert empty strings to null for numeric fields
+      // Convert empty strings to null for numeric and date fields
       const numericFields = ['invoice_amount', 'charged_weight', 'weight', 'freight', 'rate'];
+      const dateFields = ['date', 'invoice_date', 'po_date', 'eway_bill_date', 'eway_ex_date'];
       const cleanedData = { ...data };
       
       numericFields.forEach(field => {
@@ -95,6 +96,12 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
           cleanedData[field] = null;
         } else if (cleanedData[field]) {
           cleanedData[field] = parseFloat(cleanedData[field]);
+        }
+      });
+
+      dateFields.forEach(field => {
+        if (cleanedData[field] === '' || cleanedData[field] === undefined) {
+          cleanedData[field] = null;
         }
       });
 
