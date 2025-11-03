@@ -36,7 +36,14 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
     if (lr) {
       // Populate form with existing LR data
       Object.keys(lr).forEach(key => {
-        setValue(key, lr[key]);
+        if (key === 'date' || key === 'invoice_date' || key === 'po_date' || key === 'eway_bill_date' || key === 'eway_ex_date') {
+          // Format dates for input fields
+          if (lr[key]) {
+            setValue(key, new Date(lr[key]).toISOString().split('T')[0]);
+          }
+        } else {
+          setValue(key, lr[key]);
+        }
       });
       if (lr.items && Array.isArray(lr.items)) {
         setItems(lr.items.map((item: any, idx: number) => ({ ...item, id: String(idx + 1) })));
@@ -140,6 +147,20 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
             <div className="space-y-2">
               <Label htmlFor="date">Date *</Label>
               <Input type="date" id="date" {...register("date", { required: true })} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="company_logo_url">Company Logo URL (Optional)</Label>
+              <Input
+                id="company_logo_url"
+                {...register("company_logo_url")}
+                placeholder="https://example.com/logo.png"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter a URL to your company logo to display on the PDF
+              </p>
             </div>
           </div>
 
