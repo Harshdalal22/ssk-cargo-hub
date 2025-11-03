@@ -86,8 +86,20 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Convert empty strings to null for numeric fields
+      const numericFields = ['invoice_amount', 'charged_weight', 'weight', 'freight', 'rate'];
+      const cleanedData = { ...data };
+      
+      numericFields.forEach(field => {
+        if (cleanedData[field] === '' || cleanedData[field] === undefined) {
+          cleanedData[field] = null;
+        } else if (cleanedData[field]) {
+          cleanedData[field] = parseFloat(cleanedData[field]);
+        }
+      });
+
       const lrData = {
-        ...data,
+        ...cleanedData,
         items: items.filter(item => item.description || item.pcs || item.weight),
         created_by: user.id,
       };
@@ -152,15 +164,40 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
 
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="company_logo_url">Company Logo URL (Optional)</Label>
-              <Input
-                id="company_logo_url"
-                {...register("company_logo_url")}
-                placeholder="https://example.com/logo.png"
-              />
-              <p className="text-xs text-muted-foreground">
-                Enter a URL to your company logo to display on the PDF
-              </p>
+              <Label htmlFor="company_logo_url">Company Logo (Optional)</Label>
+              <div className="flex gap-4 items-start">
+                <div className="flex-1">
+                  <Input
+                    id="company_logo_url"
+                    {...register("company_logo_url")}
+                    placeholder="https://example.com/logo.png or upload below"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Enter a logo URL or upload a file below
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        // Convert to base64 for embedding in PDF
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setValue("company_logo_url", reader.result as string);
+                          toast({ title: "Logo uploaded successfully" });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upload logo image (JPG, PNG)
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
