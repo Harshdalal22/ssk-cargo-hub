@@ -62,13 +62,6 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
     if (data) setCustomers(data);
   };
 
-  const generateLRNumber = async () => {
-    const { data, error } = await supabase.rpc("generate_lr_number");
-    if (data && !error) {
-      setValue("lr_no", data);
-    }
-  };
-
   const addItem = () => {
     setItems([...items, { id: String(items.length + 1), description: '', pcs: '', weight: '' }]);
   };
@@ -169,7 +162,14 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
 
             <div className="space-y-2">
               <Label htmlFor="lr_no">LR No *</Label>
-              <Input id="lr_no" {...register("lr_no", { required: true })} placeholder="LR NO" readOnly />
+              <Input 
+                id="lr_no" 
+                value={lr?.lr_no || "Auto-generated on save"} 
+                placeholder="LR NO" 
+                readOnly 
+                disabled
+                className="bg-muted"
+              />
             </div>
 
             <div className="space-y-2">
