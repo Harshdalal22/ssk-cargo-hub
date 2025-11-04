@@ -49,7 +49,8 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
         setItems(lr.items.map((item: any, idx: number) => ({ ...item, id: String(idx + 1) })));
       }
     } else {
-      generateLRNumber();
+      // For new LR, set placeholder text only
+      setValue("lr_no", "Auto-generated on save");
     }
   }, [lr]);
 
@@ -105,23 +106,25 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
         }
       });
 
+      // Remove lr_no from cleanedData - we'll handle it separately
+      const { lr_no, ...dataWithoutLrNo } = cleanedData;
+
       const lrData = {
-        ...cleanedData,
+        ...dataWithoutLrNo,
         items: items.filter(item => item.description || item.pcs || item.weight),
         created_by: user.id,
       };
 
       if (lr?.id) {
-        // When updating, remove lr_no to prevent duplicate key errors
-        const { lr_no, ...updateData } = lrData;
+        // When updating, use existing lr_no
         const { error } = await supabase
           .from("lr_details")
-          .update(updateData)
+          .update(lrData)
           .eq("id", lr.id);
         if (error) throw error;
         toast({ title: "LR updated successfully" });
       } else {
-        // When creating new, generate fresh LR number
+        // When creating new, generate fresh LR number at submission time
         const { data: newLRNo, error: lrNoError } = await supabase.rpc("generate_lr_number");
         if (lrNoError) throw lrNoError;
         
@@ -129,7 +132,7 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
           .from("lr_details")
           .insert([{ ...lrData, lr_no: newLRNo }]);
         if (error) throw error;
-        toast({ title: "LR created successfully" });
+        toast({ title: "LR created successfully", description: `LR Number: ${newLRNo}` });
       }
       onSuccess();
     } catch (error: any) {
