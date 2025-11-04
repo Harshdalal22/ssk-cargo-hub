@@ -2,156 +2,192 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 export const generateLRPDF = async (lr: any) => {
-  const doc = new jsPDF();
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+  
+  let yPos = 10;
   
   // Add logo if available
   if (lr.company_logo_url) {
     try {
-      doc.addImage(lr.company_logo_url, 'PNG', 15, 10, 30, 20);
+      doc.addImage(lr.company_logo_url, 'PNG', 10, yPos, 35, 25);
     } catch (error) {
       console.log("Could not add logo to PDF");
     }
   }
   
-  // Header - Company Info
-  doc.setFontSize(10);
-  doc.setTextColor(220, 38, 38);
-  doc.text("Jai Dada Udmiram Ki", 105, 12, { align: "center" });
-  doc.text("SUBJECT TO DELHI JURISDICTION", 105, 17, { align: "center" });
-  
-  doc.setFontSize(24);
-  doc.setFont(undefined, 'bold');
-  doc.text("SSK INDIA LOGISTICS", 105, 27, { align: "center" });
-  
-  doc.setFontSize(11);
-  doc.setFont(undefined, 'normal');
-  doc.text("(Fleet Owner & Contractor)", 105, 33, { align: "center" });
-  
-  doc.setFontSize(8);
-  doc.text("Shop No. 362-A/2, Sataya Puram Colony, Jharoda Border, Near Ashram, New Delhi-110072", 105, 38, { align: "center" });
-  doc.text("Mail : sskindialogistics@gmail.com, Web : www.indialogistics.com", 105, 42, { align: "center" });
-  
-  doc.setFontSize(9);
-  doc.text("7834819005 | 8929920007 | 7600026311 | 9619905027", 105, 47, { align: "center" });
-  
   // Phone numbers box on right
-  doc.setFontSize(8);
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.3);
+  doc.rect(180, yPos, 25, 20);
+  doc.setFontSize(7);
   doc.setTextColor(0, 0, 0);
-  doc.rect(175, 10, 25, 20);
-  doc.text("7834819005", 177, 15);
-  doc.text("8929920007", 177, 20);
-  doc.text("7600026311", 177, 25);
-  doc.text("9619905027", 177, 28);
+  doc.text("7834819005", 181, yPos + 4);
+  doc.text("8929920007", 181, yPos + 8);
+  doc.text("7600026311", 181, yPos + 12);
+  doc.text("9619905027", 181, yPos + 16);
   
-  // Available At section
-  let yPos = 52;
+  // Header - Company Info (centered)
+  doc.setFontSize(8);
+  doc.setTextColor(220, 38, 38);
+  doc.text("Jai Dada Udmiram Ki", 105, yPos + 2, { align: "center" });
+  doc.setFontSize(7);
+  doc.text("SUBJECT TO DELHI JURISDICTION", 105, yPos + 6, { align: "center" });
+  
+  doc.setFontSize(20);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(220, 38, 38);
+  doc.text("SSK INDIA LOGISTICS", 105, yPos + 13, { align: "center" });
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(0, 0, 0);
+  doc.text("(Fleet Owner & Contractor)", 105, yPos + 18, { align: "center" });
+  
+  doc.setFontSize(7);
+  doc.text("Shop No. 362-A/2, Sataya Puram Colony, Jharoda Border, Near Ashram, New Delhi-110072", 105, yPos + 22, { align: "center" });
+  doc.text("Mail : sskindialogistics@gmail.com, Web : www.indialogistics.com", 105, yPos + 26, { align: "center" });
+  
+  yPos += 35;
+  
+  // Three column section - Available At, CAUTION, AT OWNERS RISKS
+  const col1X = 10;
+  const col2X = 70;
+  const col3X = 130;
+  const rowHeight = 30;
+  
+  // Available At box
+  doc.rect(col1X, yPos, 58, rowHeight);
+  doc.setFontSize(8);
+  doc.setFont(undefined, 'bold');
+  doc.text("Available At :", col1X + 2, yPos + 5);
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(7);
+  doc.text("AHMEDABAD", col1X + 2, yPos + 10);
+  doc.text("SURAT", col1X + 2, yPos + 14);
+  doc.text("VAPI", col1X + 2, yPos + 18);
+  doc.text("MUMBAI", col1X + 2, yPos + 22);
+  doc.text("PUNE", col1X + 2, yPos + 26);
+  
+  // CAUTION box
+  doc.rect(col2X, yPos, 58, rowHeight);
+  doc.setFontSize(8);
+  doc.setFont(undefined, 'bold');
+  doc.text("CAUTION", col2X + 2, yPos + 5);
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(6);
+  doc.text("This Consignment Will Not Be Detained Divorted,Re-Routed", col2X + 2, yPos + 9);
+  doc.text("Or Re-Booked Without Consignee Bank Written Permission", col2X + 2, yPos + 13);
+  doc.text("Will be Delivered At the Destination.", col2X + 2, yPos + 17);
+  
+  // AT OWNERS RISKS box
+  doc.rect(col3X, yPos, 75, rowHeight);
+  doc.setFontSize(8);
+  doc.setFont(undefined, 'bold');
+  doc.text("AT OWNERS RISKS", col3X + 2, yPos + 5);
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(7);
+  doc.text("Pan No. : CMFPS3661A", col3X + 2, yPos + 10);
+  doc.setTextColor(220, 38, 38);
+  doc.setFont(undefined, 'bold');
+  doc.text("GST No. : 07CMFPS3661A1Z6", col3X + 2, yPos + 15);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, 'normal');
+  
+  yPos += rowHeight;
+  
+  // Second row - NOTICE, INSURANCE, SCHEDULE OF DEMURRAGE CHARGES
+  // NOTICE box
+  doc.rect(col1X, yPos, 58, rowHeight);
+  doc.setFontSize(8);
+  doc.setFont(undefined, 'bold');
+  doc.text("NOTICE", col1X + 2, yPos + 5);
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(5.5);
+  doc.text("This consignment covered in this set of special lorry receipt", col1X + 2, yPos + 9);
+  doc.text("shall be stored at the destination under the control of the", col1X + 2, yPos + 12);
+  doc.text("transport operator & shall be delivered to or to the order of", col1X + 2, yPos + 15);
+  doc.text("the Consignee Bank whose name is mentioned in the lorry", col1X + 2, yPos + 18);
+  doc.text("receipt.", col1X + 2, yPos + 21);
+  
+  // INSURANCE box
+  doc.rect(col2X, yPos, 58, rowHeight);
+  doc.setFontSize(8);
+  doc.setFont(undefined, 'bold');
+  doc.text("INSURANCE", col2X + 2, yPos + 5);
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(6);
+  doc.text("The Customer Has Started That", col2X + 2, yPos + 10);
+  doc.text("He Has Not Insured The Consignement", col2X + 2, yPos + 14);
+  doc.text("Policy No _______ Date_______", col2X + 2, yPos + 18);
+  doc.text("Amount_______ Risk_______", col2X + 2, yPos + 22);
+  
+  // SCHEDULE OF DEMURRAGE CHARGES box
+  doc.rect(col3X, yPos, 75, rowHeight);
+  doc.setFontSize(7);
+  doc.setFont(undefined, 'bold');
+  doc.text("SCHEDULE OF DEMURRAGE CHARGES", col3X + 2, yPos + 5);
+  doc.setFont(undefined, 'normal');
+  doc.setFontSize(6);
+  doc.text("Demmurrage Chargeable After 5 days Arrival Of Goods Rs.", col3X + 2, yPos + 10);
+  doc.text("7/per Qtl.Per Day On Weight Charged", col3X + 2, yPos + 14);
+  
+  yPos += rowHeight + 5;
+  
+  // Address of Delivery section
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
-  doc.text("Available At :", 15, yPos);
+  doc.text("Address Of Delivery :", col1X, yPos);
   doc.setFont(undefined, 'normal');
-  
-  // Available cities box
-  doc.setFillColor(255, 255, 255);
-  doc.rect(15, yPos + 2, 55, 12);
   doc.setFontSize(8);
-  doc.text("AHMEDABAD", 17, yPos + 6);
-  doc.text("SURAT", 17, yPos + 9);
-  doc.text("VAPI", 17, yPos + 12);
-  doc.text("MUMBAI", 17, yPos + 15);
-  doc.text("PUNE", 43, yPos + 15);
+  if (lr.address_of_delivery) {
+    doc.text(lr.address_of_delivery, col1X + 40, yPos);
+  }
   
-  // CAUTION section
-  doc.rect(72, yPos + 2, 60, 12);
-  doc.setFontSize(8);
+  // Vehicle No
   doc.setFont(undefined, 'bold');
-  doc.text("CAUTION", 74, yPos + 5);
+  doc.text("Vehicle No. :", col3X, yPos);
   doc.setFont(undefined, 'normal');
-  doc.setFontSize(6);
-  doc.text("This Consignment Will Not Be Detained Divorted,Re-Routed", 74, yPos + 8);
-  doc.text("Or Re-Booked Without Consignee Bank Written Permission", 74, yPos + 11);
-  doc.text("Will be Delivered At the Destination.", 74, yPos + 14);
+  if (lr.truck_no) {
+    doc.text(lr.truck_no, col3X + 25, yPos);
+  }
   
-  // AT OWNERS RISKS section
-  doc.rect(134, yPos + 2, 65, 12);
-  doc.setFontSize(8);
+  yPos += 6;
+  
+  // C NOTE No
   doc.setFont(undefined, 'bold');
-  doc.text("AT OWNERS RISKS", 136, yPos + 5);
-  doc.setFont(undefined, 'normal');
-  doc.setFontSize(6);
-  doc.text("Pan No. : CMFPS3661A", 136, yPos + 8);
-  doc.setTextColor(220, 38, 38);
-  doc.text("GST No. : 07CMFPS3661A1Z6", 136, yPos + 11);
-  doc.setTextColor(0, 0, 0);
-  
-  // SCHEDULE OF DEMURRAGE CHARGES
-  yPos += 18;
-  doc.rect(134, yPos, 65, 12);
-  doc.setFontSize(7);
-  doc.setFont(undefined, 'bold');
-  doc.text("SCHEDULE OF DEMURRAGE CHARGES", 136, yPos + 3);
-  doc.setFont(undefined, 'normal');
-  doc.setFontSize(6);
-  doc.text("Demmurrage Chargeable After 5 days Arrival Of Goods Rs.", 136, yPos + 6);
-  doc.text("7/per Qtl.Per Day On Weight Charged", 136, yPos + 9);
-  
-  // INSURANCE
-  doc.rect(72, yPos, 60, 12);
-  doc.setFontSize(8);
-  doc.setFont(undefined, 'bold');
-  doc.text("INSURANCE", 74, yPos + 3);
-  doc.setFont(undefined, 'normal');
-  doc.setFontSize(6);
-  doc.text("The Customer Has Started That", 74, yPos + 6);
-  doc.text("He Has Not Insured The Consignement", 74, yPos + 9);
-  doc.text("Policy No _______ Date_______", 74, yPos + 12);
-  
-  // NOTICE section
-  doc.rect(15, yPos, 55, 12);
-  doc.setFontSize(7);
-  doc.setFont(undefined, 'bold');
-  doc.text("NOTICE", 17, yPos + 3);
-  doc.setFont(undefined, 'normal');
-  doc.setFontSize(5);
-  doc.text("This consignment covered in this set of special lorry receipt", 17, yPos + 5);
-  doc.text("shall be stored at the destination under the control of the", 17, yPos + 7);
-  doc.text("transport operator & shall be delivered to or to the order of", 17, yPos + 9);
-  doc.text("the Consignee Bank whose name is mentioned in the lorry", 17, yPos + 11);
-  doc.text("receipt.", 17, yPos + 13);
-  
-  // Address Of Delivery and Vehicle No
-  yPos += 16;
   doc.setFontSize(10);
-  doc.text("Address Of Delivery :", 15, yPos);
-  
-  // Vehicle and C NOTE
-  doc.setFontSize(11);
-  doc.text("Vehicle No. :", 134, yPos);
-  doc.setFont(undefined, 'bold');
-  doc.setFontSize(11);
-  doc.text(`C NOTE No. : ${lr.lr_no || ''}`, 134, yPos + 6);
+  doc.text(`C NOTE No. : ${lr.lr_no || ''}`, col3X, yPos);
   doc.setFont(undefined, 'normal');
   
-  // Consignor and details
   yPos += 8;
-  doc.setFontSize(10);
-  doc.text(`Consignor : ${lr.consignor_name || ''}`, 15, yPos);
-  doc.text(`DATE : ${lr.date ? new Date(lr.date).toLocaleDateString('en-GB') : ''}`, 134, yPos);
+  
+  // Main details section
+  doc.setFontSize(8);
+  doc.text(`Consignor : ${lr.consignor_name || ''}`, col1X, yPos);
+  doc.text(`DATE : ${lr.date ? new Date(lr.date).toLocaleDateString('en-GB') : ''}`, col3X, yPos);
   
   yPos += 5;
-  doc.text(`Consignee : ${lr.consignee_name || ''}`, 15, yPos);
-  doc.text(`FROM : ${lr.from_place || ''}`, 134, yPos);
+  doc.text(`Consignee : ${lr.consignee_name || ''}`, col1X, yPos);
+  doc.text(`FROM : ${lr.from_place || ''}`, col3X, yPos);
   
   yPos += 5;
-  doc.text(`TO : ${lr.to_place || ''}`, 134, yPos);
+  doc.text(`TO : ${lr.to_place || ''}`, col3X, yPos);
   
-  yPos += 5;
-  doc.text(`Consignor GST No : ${lr.consignor_gst || ''}`, 15, yPos);
-  
-  // Items table
   yPos += 8;
+  
+  // GST section box
+  doc.rect(col1X, yPos, 195, 6);
+  doc.setFontSize(8);
+  doc.text(`Consignor GST No : ${lr.consignor_gst || ''}`, col1X + 2, yPos + 4);
+  
+  yPos += 8;
+  
+  // Main table
   const items = Array.isArray(lr.items) ? lr.items : [];
-  
-  // Create table body
   const tableBody = [];
   
   // Add item rows
@@ -160,24 +196,27 @@ export const generateLRPDF = async (lr: any) => {
       tableBody.push([
         item.pcs || '',
         item.description || '',
-        '',
         item.weight || '',
+        '',
         '',
         '',
         'To PAY Rs. :'
       ]);
     });
   } else {
-    tableBody.push(['', '', '', '', '', '', 'To PAY Rs. :']);
+    // Empty rows for manual filling
+    for (let i = 0; i < 3; i++) {
+      tableBody.push(['', '', '', '', '', '', i === 0 ? 'To PAY Rs. :' : '']);
+    }
   }
   
-  // Add additional rows
+  // Add the structured rows
   tableBody.push(['', '', 'Actual', 'Charged', 'Hamail', '', 'Paid RS. :']);
-  tableBody.push(['', '', '', '', 'Sur.CH.', '', '']);
-  tableBody.push(['', 'Invoice No.: ' + (lr.invoice_no || ''), '', '', 'St.CH.', '', '']);
-  tableBody.push(['', 'Date: ' + (lr.invoice_date ? new Date(lr.invoice_date).toLocaleDateString('en-GB') : ''), '', '', 'Collection CH.', '', '']);
+  tableBody.push(['', '', lr.weight || '', lr.charged_weight || '', 'Sur.CH.', '', '']);
+  tableBody.push(['', `Invoice No.: ${lr.invoice_no || ''}`, '', '', 'St.CH.', '', '']);
+  tableBody.push(['', `Date : ${lr.invoice_date ? new Date(lr.invoice_date).toLocaleDateString('en-GB') : ''}`, '', 'Mark', 'Collection CH.', '', '']);
   tableBody.push(['', 'GST NO. :', '', '', 'D.Dty CH.', '', '']);
-  tableBody.push(['', '', '', 'Mark', 'Other CH.', '', '']);
+  tableBody.push(['', '', '', '', 'Other CH.', '', '']);
   tableBody.push(['', '', '', '', 'Risk CH.', '', '']);
   tableBody.push(['', '', '', '', 'Total', '', '']);
   
@@ -190,45 +229,50 @@ export const generateLRPDF = async (lr: any) => {
       fontSize: 7, 
       cellPadding: 1.5,
       lineColor: [0, 0, 0],
-      lineWidth: 0.1
+      lineWidth: 0.3,
+      halign: 'left'
     },
     headStyles: {
       fillColor: [255, 255, 255],
       textColor: [0, 0, 0],
       fontStyle: 'bold',
-      halign: 'center'
+      halign: 'center',
+      lineWidth: 0.3
     },
     columnStyles: {
-      0: { cellWidth: 18, halign: 'center' },
-      1: { cellWidth: 45 },
+      0: { cellWidth: 20, halign: 'center' },
+      1: { cellWidth: 50 },
       2: { cellWidth: 20, halign: 'center' },
       3: { cellWidth: 20, halign: 'center' },
       4: { cellWidth: 25, halign: 'center' },
-      5: { cellWidth: 20, halign: 'center' },
+      5: { cellWidth: 25, halign: 'center' },
       6: { cellWidth: 35 },
     },
   });
   
-  // Footer
+  // Footer section
   const footerY = (doc as any).lastAutoTable.finalY + 5;
+  
   doc.setFontSize(6);
-  doc.text("Endorsement Its Is Intended To use Consignee Copy Of the Set For The Purpose Of Borrowing From The", 15, footerY);
-  doc.text("Consignee Bank", 15, footerY + 3);
+  doc.text("Endorsement Its Is Intended To use Consignee Copy Of the Set For The Purpose Of Borrowing From The", col1X, footerY);
+  doc.text("Consignee Bank", col1X, footerY + 3);
   
-  doc.text("The Court In Delhi Alone Shall Have Jurisdiction In Respect Of The Claims And Matters", 15, footerY + 8);
-  doc.text("Arising Under The Consignment Or Of the Claims And Matter Arising Under The Goods", 15, footerY + 11);
-  doc.text("Entrusted For Transport", 15, footerY + 14);
+  doc.text("The Court In Delhi Alone Shall Have Jurisdiction In Respect Of The Claims And Matters", col1X, footerY + 8);
+  doc.text("Arising Under The Consignment Or Of the Claims And Matter Arising Under The Goods", col1X, footerY + 11);
+  doc.text("Entrusted For Transport", col1X, footerY + 14);
   
-  doc.setFontSize(8);
-  doc.text("Value :", 15, footerY + 20);
+  doc.setFontSize(7);
+  doc.text("Value :", col1X, footerY + 20);
   
+  // GST PAYABLE BY (centered)
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
-  doc.text("GST PAYABLE BY", 105, footerY + 10, { align: "center" });
+  doc.text("GST PAYABLE BY", 105, footerY + 15, { align: "center" });
   doc.setFont(undefined, 'normal');
   
-  doc.setFontSize(9);
-  doc.text("For SSK INDIA LOGISTICS", 160, footerY + 10);
+  // For SSK INDIA LOGISTICS signature section
+  doc.setFontSize(8);
+  doc.text("For SSK INDIA LOGISTICS", 160, footerY + 12);
   doc.text("Auth. Signatory", 165, footerY + 25);
   
   // Save the PDF
