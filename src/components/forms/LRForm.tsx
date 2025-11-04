@@ -112,16 +112,22 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
       };
 
       if (lr?.id) {
+        // When updating, remove lr_no to prevent duplicate key errors
+        const { lr_no, ...updateData } = lrData;
         const { error } = await supabase
           .from("lr_details")
-          .update(lrData)
+          .update(updateData)
           .eq("id", lr.id);
         if (error) throw error;
         toast({ title: "LR updated successfully" });
       } else {
+        // When creating new, generate fresh LR number
+        const { data: newLRNo, error: lrNoError } = await supabase.rpc("generate_lr_number");
+        if (lrNoError) throw lrNoError;
+        
         const { error } = await supabase
           .from("lr_details")
-          .insert([lrData]);
+          .insert([{ ...lrData, lr_no: newLRNo }]);
         if (error) throw error;
         toast({ title: "LR created successfully" });
       }
