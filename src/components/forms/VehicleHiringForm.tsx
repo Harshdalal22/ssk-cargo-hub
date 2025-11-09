@@ -172,6 +172,8 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
         created_by: user.id,
       };
 
+      console.log("Submitting vehicle hiring data:", dataToSubmit);
+
       let recordId: string;
 
       if (editData) {
@@ -181,6 +183,7 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
           .eq("id", editData.id);
 
         if (error) throw error;
+        console.log("Vehicle hiring record updated successfully");
         recordId = editData.id;
 
         await supabase

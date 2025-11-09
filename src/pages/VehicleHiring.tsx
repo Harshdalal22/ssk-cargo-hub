@@ -92,6 +92,7 @@ const VehicleHiring = () => {
         .order("date", { ascending: false });
 
       if (error) throw error;
+      console.log("Fetched vehicle hiring records:", data);
       setRecords(data || []);
       setFilteredRecords(data || []);
     } catch (error: any) {
