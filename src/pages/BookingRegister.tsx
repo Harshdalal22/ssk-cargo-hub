@@ -37,6 +37,8 @@ interface Booking {
   other_expenses: number;
   total_balance: number;
   payment_status: string;
+  pod_received_status: string;
+  pod_received_date: string | null;
 }
 
 const BookingRegister = () => {
@@ -200,6 +202,7 @@ const BookingRegister = () => {
                     <th className="p-3 text-right text-sm font-medium">Weight (kg)</th>
                     <th className="p-3 text-right text-sm font-medium">Freight</th>
                     <th className="p-3 text-right text-sm font-medium">Total Balance</th>
+                    <th className="p-3 text-center text-sm font-medium">POD Status</th>
                     <th className="p-3 text-center text-sm font-medium">Payment</th>
                     <th className="p-3 text-center text-sm font-medium">Actions</th>
                   </tr>
@@ -224,6 +227,11 @@ const BookingRegister = () => {
                       <td className="p-3 text-sm text-right">₹{record.freight.toLocaleString()}</td>
                       <td className="p-3 text-sm text-right font-medium">
                         ₹{record.total_balance.toLocaleString()}
+                      </td>
+                      <td className="p-3 text-center">
+                        <Badge variant={record.pod_received_status === "Received" ? "secondary" : "destructive"}>
+                          {record.pod_received_status}
+                        </Badge>
                       </td>
                       <td className="p-3 text-center">
                         <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
@@ -269,9 +277,14 @@ const BookingRegister = () => {
                       <p className="text-sm font-medium text-muted-foreground">Booking ID</p>
                       <p className="text-base font-bold">{record.booking_id}</p>
                     </div>
-                    <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
-                      {record.payment_status}
-                    </Badge>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant={record.pod_received_status === "Received" ? "secondary" : "destructive"}>
+                        POD: {record.pod_received_status}
+                      </Badge>
+                      <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
+                        {record.payment_status}
+                      </Badge>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

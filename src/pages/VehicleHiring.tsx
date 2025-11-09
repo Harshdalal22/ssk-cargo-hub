@@ -36,6 +36,8 @@ interface VehicleHiring {
   other_expenses: number;
   total_balance: number;
   pod_status: string;
+  pod_received_status: string;
+  pod_received_date: string | null;
   payment_status: string;
 }
 
@@ -217,8 +219,8 @@ const VehicleHiring = () => {
                         ₹{record.total_balance.toLocaleString()}
                       </td>
                       <td className="p-3 text-center">
-                        <Badge variant={record.pod_status === "Completed" ? "secondary" : "destructive"}>
-                          {record.pod_status}
+                        <Badge variant={record.pod_received_status === "Received" ? "secondary" : "destructive"}>
+                          {record.pod_received_status}
                         </Badge>
                       </td>
                       <td className="p-3 text-center">
@@ -266,8 +268,8 @@ const VehicleHiring = () => {
                       <p className="text-base font-bold">{record.booking_id}</p>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <Badge variant={record.pod_status === "Completed" ? "secondary" : "destructive"}>
-                        POD: {record.pod_status}
+                      <Badge variant={record.pod_received_status === "Received" ? "secondary" : "destructive"}>
+                        POD: {record.pod_received_status}
                       </Badge>
                       <Badge variant={record.payment_status === "Completed" ? "secondary" : "destructive"}>
                         {record.payment_status}
