@@ -221,6 +221,9 @@ const VehicleHiringForm = ({ isOpen, onClose, editData }: VehicleHiringFormProps
       }
 
       toast.success(editData ? "Record updated successfully" : "Record added successfully");
+      
+      // Small delay to ensure real-time update has propagated
+      await new Promise(resolve => setTimeout(resolve, 300));
       onClose();
     } catch (error: any) {
       toast.error(error.message || "An error occurred");

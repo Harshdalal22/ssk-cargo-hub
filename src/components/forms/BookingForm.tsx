@@ -212,6 +212,9 @@ const BookingForm = ({ isOpen, onClose, editData }: BookingFormProps) => {
       }
 
       toast.success(editData ? "Booking updated successfully" : "Booking added successfully");
+      
+      // Small delay to ensure real-time update has propagated
+      await new Promise(resolve => setTimeout(resolve, 300));
       onClose();
     } catch (error: any) {
       toast.error(error.message || "An error occurred");

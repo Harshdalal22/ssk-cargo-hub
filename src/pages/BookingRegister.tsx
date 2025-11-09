@@ -58,7 +58,8 @@ const BookingRegister = () => {
     // Real-time subscription
     const channel = supabase
       .channel('booking-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'booking_register' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'booking_register' }, (payload) => {
+        console.log('Real-time booking update received:', payload);
         fetchRecords();
       })
       .subscribe();
@@ -141,10 +142,11 @@ const BookingRegister = () => {
     setIsFormOpen(true);
   };
 
-  const handleFormClose = () => {
+  const handleFormClose = async () => {
     setIsFormOpen(false);
     setEditingRecord(null);
-    fetchRecords();
+    // Force immediate refresh
+    await fetchRecords();
   };
 
   return (

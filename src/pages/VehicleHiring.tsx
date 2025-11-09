@@ -58,7 +58,8 @@ const VehicleHiring = () => {
     // Real-time subscription
     const channel = supabase
       .channel('vehicle-hiring-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicle_hiring_details' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehicle_hiring_details' }, (payload) => {
+        console.log('Real-time update received:', payload);
         fetchRecords();
       })
       .subscribe();
@@ -141,10 +142,11 @@ const VehicleHiring = () => {
     setIsFormOpen(true);
   };
 
-  const handleFormClose = () => {
+  const handleFormClose = async () => {
     setIsFormOpen(false);
     setEditingRecord(null);
-    fetchRecords();
+    // Force immediate refresh
+    await fetchRecords();
   };
 
   return (
