@@ -20,6 +20,19 @@ export const LRList = ({ onEdit }: LRListProps) => {
 
   useEffect(() => {
     loadLRs();
+    
+    // Real-time subscription
+    const channel = supabase
+      .channel('lr-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'lr_details' }, (payload) => {
+        console.log('Real-time LR update received:', payload);
+        loadLRs();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadLRs = async () => {
@@ -31,6 +44,7 @@ export const LRList = ({ onEdit }: LRListProps) => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
+      console.log("Loaded LRs:", data);
       setLRs(data || []);
     } catch (error: any) {
       toast({ title: "Error loading LRs", description: error.message, variant: "destructive" });
@@ -58,9 +72,11 @@ export const LRList = ({ onEdit }: LRListProps) => {
 
   const handleDownloadPDF = async (lr: any) => {
     try {
+      console.log("Generating PDF for LR:", lr);
       await generateLRPDF(lr);
       toast({ title: "PDF generated successfully" });
     } catch (error: any) {
+      console.error("PDF generation error:", error);
       toast({ title: "Error generating PDF", description: error.message, variant: "destructive" });
     }
   };

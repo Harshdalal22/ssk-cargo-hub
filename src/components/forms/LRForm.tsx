@@ -115,18 +115,24 @@ export const LRForm = ({ lr, onClose, onSuccess }: LRFormProps) => {
           .update(lrData)
           .eq("id", lr.id);
         if (error) throw error;
+        console.log("LR updated successfully, ID:", lr.id);
         toast({ title: "LR updated successfully" });
       } else {
         // When creating new, generate fresh LR number at submission time
         const { data: newLRNo, error: lrNoError } = await supabase.rpc("generate_lr_number");
         if (lrNoError) throw lrNoError;
+        console.log("Generated new LR number:", newLRNo);
         
         const { error } = await supabase
           .from("lr_details")
           .insert([{ ...lrData, lr_no: newLRNo }]);
         if (error) throw error;
+        console.log("LR created successfully with number:", newLRNo);
         toast({ title: "LR created successfully", description: `LR Number: ${newLRNo}` });
       }
+      
+      // Small delay to ensure real-time update has propagated
+      await new Promise(resolve => setTimeout(resolve, 300));
       onSuccess();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

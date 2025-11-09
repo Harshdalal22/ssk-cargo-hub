@@ -19,7 +19,7 @@ const LRManagement = () => {
     setShowForm(true);
   };
 
-  const handleFormClose = () => {
+  const handleFormClose = async () => {
     setShowForm(false);
     setSelectedLR(null);
   };
