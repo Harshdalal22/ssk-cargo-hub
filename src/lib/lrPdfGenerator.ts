@@ -2,22 +2,30 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 export const generateLRPDF = async (lr: any) => {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
-  
-  let yPos = 10;
-  
-  // Add logo if available
-  if (lr.company_logo_url) {
-    try {
-      doc.addImage(lr.company_logo_url, 'PNG', 10, yPos, 35, 25);
-    } catch (error) {
-      console.log("Could not add logo to PDF");
+  try {
+    console.log("Starting PDF generation for LR:", lr);
+    
+    // Validate required fields
+    if (!lr.lr_no || !lr.truck_no || !lr.from_place || !lr.to_place || !lr.consignor_name || !lr.consignee_name) {
+      throw new Error("Missing required LR fields. Please ensure all mandatory fields are filled.");
     }
-  }
+
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    let yPos = 10;
+    
+    // Add logo if available
+    if (lr.company_logo_url) {
+      try {
+        doc.addImage(lr.company_logo_url, 'PNG', 10, yPos, 35, 25);
+      } catch (error) {
+        console.log("Could not add logo to PDF");
+      }
+    }
   
   // Phone numbers box on right
   doc.setDrawColor(0, 0, 0);
@@ -277,4 +285,10 @@ export const generateLRPDF = async (lr: any) => {
   
   // Save the PDF
   doc.save(`LR_${lr.lr_no}.pdf`);
+  console.log("PDF generated successfully:", `LR_${lr.lr_no}.pdf`);
+  
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw error;
+  }
 };
